@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧電子閱讀護照系統 v1.0</title>
-    <!-- 引入 Tailwind CSS 與 Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>智慧電子閱讀護照系統 v1.0 - 全校大廳總覽</title>
+    <!-- 使用穩定版 Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Chart.js 圖表庫 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- 引入 html5-qrcode 條碼掃描外掛 -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        /* 平滑過渡與動畫效果 */
+        /* 視覺動畫優化 */
         .view-panel {
             animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
@@ -33,41 +34,50 @@
             transform: rotate(-12deg);
             text-transform: uppercase;
         }
+        /* 限制背景圖高度與排版防呆 */
+        .bg-grid-pattern {
+            background-image: radial-gradient(rgba(229, 193, 88, 0.1) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen selection:bg-indigo-500 selection:text-white pb-12">
 
     <!-- 頂部導航列 -->
     <header id="mainHeader" class="bg-[#1e2d42] text-[#e5c158] transition-colors duration-500 shadow-lg px-6 py-4 sticky top-0 z-40 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="flex items-center gap-3">
-            <span class="text-3xl animate-pulse">📚</span>
+        <div class="flex items-center gap-3 cursor-pointer" onclick="navigateToLobby()">
+            <span class="text-3xl animate-pulse">🏛️</span>
             <div>
-                <h1 class="text-lg md:text-xl font-bold tracking-wider font-serif">電子閱讀護照系統</h1>
-                <p id="announcementMarquee" class="text-xs text-slate-300 mt-0.5 max-w-md truncate">正在連線雲端公告欄...</p>
+                <h1 class="text-lg md:text-xl font-bold tracking-wider font-serif">電子閱讀護照大廳</h1>
+                <p id="announcementMarquee" class="text-xs text-slate-300 mt-0.5 max-w-xl truncate">正在連線全校公告欄...</p>
             </div>
         </div>
 
-        <!-- 身份調度區 -->
+        <!-- 身份與主題快速調度區 -->
         <div class="flex flex-wrap items-center gap-3">
-            <div class="flex items-center gap-1.5 bg-black/25 px-2.5 py-1.5 rounded-xl border border-white/10">
-                <span class="text-[10px] text-slate-300">護照主題:</span>
+            <!-- 護照主題色切換 -->
+            <div class="flex items-center gap-1.5 bg-black/25 px-2.5 py-1.5 rounded-xl border border-white/10 text-xs">
+                <span class="text-slate-300">主題:</span>
                 <div class="flex gap-1.5">
-                    <button onclick="changeSystemTheme('blue')" class="w-3 h-3 rounded-full bg-[#1e2d42] border border-white/50 cursor-pointer" title="皇家古典藍"></button>
-                    <button onclick="changeSystemTheme('green')" class="w-3 h-3 rounded-full bg-[#1c352d] border border-white/50 cursor-pointer" title="翡翠墨綠"></button>
-                    <button onclick="changeSystemTheme('burgundy')" class="w-3 h-3 rounded-full bg-[#4a1525] border border-white/50 cursor-pointer" title="勃根地紅"></button>
-                    <button onclick="changeSystemTheme('purple')" class="w-3 h-3 rounded-full bg-[#2e1a47] border border-white/50 cursor-pointer" title="魔法深紫"></button>
+                    <button onclick="changeSystemTheme('blue')" class="w-3.5 h-3.5 rounded-full bg-[#1e2d42] border border-white/50 cursor-pointer" title="皇家古典藍"></button>
+                    <button onclick="changeSystemTheme('green')" class="w-3.5 h-3.5 rounded-full bg-[#1c352d] border border-white/50 cursor-pointer" title="翡翠墨綠"></button>
+                    <button onclick="changeSystemTheme('burgundy')" class="w-3.5 h-3.5 rounded-full bg-[#4a1525] border border-white/50 cursor-pointer" title="勃根地紅"></button>
+                    <button onclick="changeSystemTheme('purple')" class="w-3.5 h-3.5 rounded-full bg-[#2e1a47] border border-white/50 cursor-pointer" title="魔法深紫"></button>
                 </div>
             </div>
 
+            <!-- 控制台快捷切換下拉選單 -->
             <select id="roleSelect" class="bg-black/25 text-white text-xs border border-white/10 rounded-xl p-2 focus:outline-none cursor-pointer font-bold">
-                <option value="student">學生入口 (學號: S11201)</option>
-                <option value="teacher">教師指導入口 (班導師)</option>
-                <option value="admin">全校管理員入口 (資訊處)</option>
+                <option value="lobby">🌐 全校護照大廳首頁</option>
+                <option value="student">🎒 個人閱讀護照 (學號: S11201)</option>
+                <option value="teacher">🧑‍🏫 教師指導入口 (班導師)</option>
+                <option value="admin">🏛️ 全校管理員入口 (資訊處)</option>
             </select>
 
-            <div class="text-xs bg-black/40 py-1.5 px-3 rounded-xl border border-white/10 text-right min-w-[100px]">
-                <span class="font-bold block text-yellow-400" id="headerUserName">載入中...</span>
-                <span class="text-[9px] text-slate-300 uppercase block font-mono" id="headerUserRole">STUDENT</span>
+            <!-- 右端當前登入提示 -->
+            <div class="text-xs bg-black/40 py-1.5 px-3 rounded-xl border border-white/10 text-right min-w-[110px]" id="userStatusTag">
+                <span class="font-bold block text-yellow-400" id="headerUserName">全校訪客</span>
+                <span class="text-[9px] text-slate-300 uppercase block font-mono" id="headerUserRole">LOBBY</span>
             </div>
         </div>
     </header>
@@ -75,6 +85,115 @@
     <!-- 系統主控台容器 -->
     <main class="max-w-7xl w-full mx-auto p-4 md:p-6 min-h-[calc(100vh-140px)]">
         
+        <!-- ==================== 0. 全校閱讀大廳首頁 (新首頁看板) ==================== -->
+        <section id="viewLobby" class="view-panel space-y-6">
+            
+            <!-- 壯麗巨幅歡迎區 -->
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden border border-indigo-500/20 bg-grid-pattern">
+                <div class="absolute -right-10 -bottom-10 text-9xl opacity-10 font-bold select-none pointer-events-none">WISDOM</div>
+                <div class="relative z-10 max-w-3xl">
+                    <span class="bg-amber-400/20 text-amber-300 text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full border border-amber-400/30">School Reading Republic</span>
+                    <h2 class="text-2xl md:text-4xl font-serif font-extrabold mt-3 tracking-wider text-yellow-100">智慧閱讀護照共和國</h2>
+                    <p class="text-xs md:text-sm text-slate-300 mt-2 leading-relaxed">
+                        「讀萬卷書，行萬里路。」這裡記錄了全校旅行家征服知識版圖的精彩冒險。快拿起您的閱讀護照，加蓋專屬的國家簽證印章，開啟全新的旅途吧！
+                    </p>
+                </div>
+                
+                <!-- 快捷三大入口傳送門卡片 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                    <!-- 學生卡 -->
+                    <div onclick="setRole('student')" class="bg-white/10 hover:bg-white/15 border border-white/10 p-5 rounded-2xl cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group">
+                        <div class="text-3xl group-hover:scale-110 transition-transform">🎒</div>
+                        <h4 class="font-bold text-sm text-yellow-300 mt-3">進入個人閱讀護照</h4>
+                        <p class="text-[11px] text-slate-300 mt-1 leading-normal">登錄新書、撰寫心得感想、解鎖榮譽徽章、查看雷達圖。</p>
+                        <span class="text-[10px] text-yellow-400 font-bold mt-3 block group-hover:underline">即刻啟航 →</span>
+                    </div>
+                    <!-- 教師卡 -->
+                    <div onclick="setRole('teacher')" class="bg-white/10 hover:bg-white/15 border border-white/10 p-5 rounded-2xl cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group">
+                        <div class="text-3xl group-hover:scale-110 transition-transform">🧑‍🏫</div>
+                        <h4 class="font-bold text-sm text-yellow-300 mt-3">教師指導管理中心</h4>
+                        <p class="text-[11px] text-slate-300 mt-1 leading-normal">審查班級讀書心得、加蓋簽章認證、派發指定任務、匯出報表。</p>
+                        <span class="text-[10px] text-yellow-400 font-bold mt-3 block group-hover:underline">進入指導控台 →</span>
+                    </div>
+                    <!-- 管理員卡 -->
+                    <div onclick="setRole('admin')" class="bg-white/10 hover:bg-white/15 border border-white/10 p-5 rounded-2xl cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group">
+                        <div class="text-3xl group-hover:scale-110 transition-transform">🏛️</div>
+                        <h4 class="font-bold text-sm text-yellow-300 mt-3">全校資訊教務後台</h4>
+                        <p class="text-[11px] text-slate-300 mt-1 leading-normal">掌握全校大數據分析、推播滾動公告、直接編輯雲端資料庫。</p>
+                        <span class="text-[10px] text-yellow-400 font-bold mt-3 block group-hover:underline">系統維護後台 →</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 全校累積冒險成果大數據指標 -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <span class="text-xs text-slate-400 font-bold block">全校累積認證本數</span>
+                    <div class="flex items-baseline gap-1.5 mt-2">
+                        <span class="text-2xl md:text-3xl font-serif font-black text-[#1e2d42]" id="lobbyTotalBooks">0</span>
+                        <span class="text-xs text-slate-500">本</span>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <span class="text-xs text-slate-400 font-bold block">全校知識探險深度</span>
+                    <div class="flex items-baseline gap-1.5 mt-2">
+                        <span class="text-2xl md:text-3xl font-serif font-black text-emerald-700" id="lobbyTotalPages">0</span>
+                        <span class="text-xs text-slate-500">頁</span>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <span class="text-xs text-slate-400 font-bold block">已啟航旅行家總數</span>
+                    <div class="flex items-baseline gap-1.5 mt-2">
+                        <span class="text-2xl md:text-3xl font-serif font-black text-indigo-700" id="lobbyTotalUsers">0</span>
+                        <span class="text-xs text-slate-500">位</span>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <span class="text-xs text-slate-400 font-bold block">全校平均滿意評分</span>
+                    <div class="flex items-baseline gap-1.5 mt-2">
+                        <span class="text-2xl md:text-3xl font-serif font-black text-amber-500" id="lobbyAvgRating">0.0</span>
+                        <span class="text-xs text-slate-500">★</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 全校圖表分佈與榮譽榜 (2欄版面) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- 左側：全校探索比例 (5格) -->
+                <div class="lg:col-span-5 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                    <h3 class="font-bold text-sm text-slate-700 flex items-center gap-2 border-b pb-2">
+                        <span>📊 六大國度探索熱度比例</span>
+                    </h3>
+                    <div class="relative min-h-[220px] flex items-center justify-center">
+                        <canvas id="lobbyRadarChart" class="max-h-56"></canvas>
+                    </div>
+                </div>
+
+                <!-- 右側：班級競賽榮譽榜 & 最新動態 (7格) -->
+                <div class="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 班級榮譽對抗榜 -->
+                    <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                        <h3 class="font-bold text-sm text-slate-700 border-b pb-2">🏆 班級累計認證競賽榜</h3>
+                        <ul class="space-y-2.5 text-xs" id="lobbyClassList">
+                            <!-- 動態渲染 -->
+                        </ul>
+                    </div>
+
+                    <!-- 即時出入境核章動態牆 -->
+                    <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                        <h3 class="font-bold text-sm text-slate-700 border-b pb-2 flex justify-between items-center">
+                            <span>📡 最新核章出入境實況</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        </h3>
+                        <div id="lobbyLiveStream" class="space-y-3 max-h-[220px] overflow-y-auto no-scrollbar">
+                            <!-- 動態串流 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- ==================== 1. 學生端主介面 ==================== -->
         <section id="viewStudent" class="view-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
             <!-- 左側個人統計、徽章與排行榜 (4格) -->
@@ -335,8 +454,8 @@
 
         // 全域核心狀態快取
         let appState = { logs: [], users: [], tasks: [], announcements: [], classes: [] };
-        let activeUser = { uid: "S11201", name: "王小明", role: "student", classId: "C01" }; // 預設模擬
-        let chartInstances = { radar: null };
+        let activeUser = { uid: "S11201", name: "王小明", role: "student", classId: "C01" }; // 學生身份預載
+        let chartInstances = { radar: null, lobbyRadar: null };
         let qrScanner = null;
 
         // 主題色設定
@@ -347,7 +466,7 @@
             purple: { coverBg: 'bg-[#2e1a47]', border: 'border-[#e0b0ff]', text: 'text-[#e0b0ff]' }
         };
 
-        // 書籍分類語意設定
+        // 書籍分類與視覺印章
         const CATEGORY_MAP = {
             literature: { label: '文學故事', emoji: '🎭', color: 'bg-rose-100 text-rose-800' },
             science: { label: '科普大自然', emoji: '🔬', color: 'bg-cyan-100 text-cyan-800' },
@@ -357,24 +476,40 @@
             fantasy: { label: '奇幻魔法', emoji: '🔮', color: 'bg-indigo-100 text-indigo-800' }
         };
 
-        // 系統啟動與掛載事件
+        // 系統掛載
         document.addEventListener("DOMContentLoaded", async function() {
             await syncCloudData();
 
-            // 監聽角色身份切換事件
+            // 監聽快捷身份變更
             document.getElementById("roleSelect").addEventListener("change", function(e) {
-                const role = e.target.value;
-                if(role === "student") activeUser = { uid: "S11201", name: "王小明", role: "student", classId: "C01" };
-                else if(role === "teacher") activeUser = { uid: "T9901", name: "張美玲老師", role: "teacher", classId: "C01" };
-                else activeUser = { uid: "ADMIN", name: "全校系統管理員", role: "admin", classId: "" };
-                switchDashboardView();
+                setRole(e.target.value);
             });
 
-            // 監聽學生表單提交事件
+            // 學生提報表單提交
             document.getElementById("addBookForm").addEventListener("submit", handleStudentFormSubmit);
         });
 
-        // 雲端資料同步核心邏輯
+        // 大廳快捷傳送門切換身份
+        function setRole(roleName) {
+            document.getElementById("roleSelect").value = roleName;
+            if(roleName === "lobby") {
+                activeUser = { uid: "GUEST", name: "全校訪客", role: "lobby", classId: "" };
+            } else if(roleName === "student") {
+                activeUser = { uid: "S11201", name: "王小明", role: "student", classId: "C01" };
+            } else if(roleName === "teacher") {
+                activeUser = { uid: "T9901", name: "張美玲老師", role: "teacher", classId: "C01" };
+            } else if(roleName === "admin") {
+                activeUser = { uid: "ADMIN", name: "全校系統管理員", role: "admin", classId: "" };
+            }
+            switchDashboardView();
+        }
+
+        // 點擊Logo快速返回大廳
+        function navigateToLobby() {
+            setRole('lobby');
+        }
+
+        // 同步 Google Apps Script / Sheets 資料
         async function syncCloudData() {
             toggleLoader(true);
             try {
@@ -382,27 +517,34 @@
                 appState = await response.json();
                 switchDashboardView();
             } catch (err) {
-                showCustomToast("目前無法成功串接試算表 API，請檢查您的部署設定與 CORS 權限限制。", "error");
+                showCustomToast("無法成功同步雲端試算表，請確認您的 GAS 部署與 Google 權限是否正確設為任何人皆可存取。", "error");
             } finally {
                 toggleLoader(false);
             }
         }
 
-        // 調度並切換三端檢視頁面
+        // SPA 視窗中央控制調度
         function switchDashboardView() {
+            // 隱藏全部
             document.querySelectorAll(".view-panel").forEach(p => p.classList.add("hidden"));
+            
+            // 更新狀態顯示列
             document.getElementById("headerUserName").innerText = activeUser.name;
             document.getElementById("headerUserRole").innerText = activeUser.role.toUpperCase();
 
-            // 渲染公告最新跑馬燈
+            // 滾動公告跑馬燈渲染
             if (appState.announcements && appState.announcements.length > 0) {
                 const latest = appState.announcements[appState.announcements.length - 1];
-                document.getElementById("announcementMarquee").innerText = `📢 全校公告：[${latest.date}] ${latest.title} — ${latest.content}`;
+                document.getElementById("announcementMarquee").innerText = `📢 全校最新公告：[${latest.date}] ${latest.title} — ${latest.content}`;
             } else {
-                document.getElementById("announcementMarquee").innerText = `📢 最新公告：寒暑假自主悅讀大冒險開跑，歡迎登錄獲得你的國家簽證戳章！`;
+                document.getElementById("announcementMarquee").innerText = `📢 最新公告：寒暑假自主悅讀大冒險開跑，歡迎登錄獲得您的國家簽證戳章！`;
             }
 
-            if (activeUser.role === "student") {
+            // 切換對應控制台
+            if (activeUser.role === "lobby") {
+                document.getElementById("viewLobby").classList.remove("hidden");
+                renderLobbyView();
+            } else if (activeUser.role === "student") {
                 document.getElementById("viewStudent").classList.remove("hidden");
                 renderStudentView();
             } else if (activeUser.role === "teacher") {
@@ -414,12 +556,118 @@
             }
         }
 
-        // ==================== [ 學生端渲染模組 ] ====================
+        // ==================== [ 0. 全校大廳首頁渲染邏輯 ] ====================
+        function renderLobbyView() {
+            const logs = appState.logs || [];
+            const certifiedLogs = logs.filter(l => l.status === "已核章");
+            const distinctUsers = new Set(logs.map(l => l.uid));
+
+            // 算數據看板
+            document.getElementById("lobbyTotalBooks").innerText = certifiedLogs.length;
+            document.getElementById("lobbyTotalPages").innerText = certifiedLogs.reduce((sum, l) => sum + (Number(l.pages) || 0), 0);
+            document.getElementById("lobbyTotalUsers").innerText = distinctUsers.size;
+            
+            const totalRating = certifiedLogs.reduce((sum, l) => sum + (Number(l.rating) || 5), 0);
+            document.getElementById("lobbyAvgRating").innerText = certifiedLogs.length > 0 ? (totalRating / certifiedLogs.length).toFixed(1) : "0.0";
+
+            // 渲染班級排行競賽榜
+            const classCounts = {};
+            // 對應 classes 名冊進行初始防呆
+            if(appState.classes) {
+                appState.classes.forEach(c => { classCounts[c.className] = 0; });
+            }
+            // 累計各班已核章量
+            certifiedLogs.forEach(l => {
+                const classObj = appState.classes.find(c => c.classId.toString() === l.classId.toString());
+                const className = classObj ? classObj.className : "其他班級";
+                classCounts[className] = (classCounts[className] || 0) + 1;
+            });
+
+            const lobbyClassList = document.getElementById("lobbyClassList");
+            lobbyClassList.innerHTML = "";
+            const sortedClasses = Object.entries(classCounts).sort((a,b) => b[1] - a[1]);
+            
+            if(sortedClasses.length === 0) {
+                lobbyClassList.innerHTML = `<li class="text-slate-400 text-center py-4">目前尚無班級競賽數據</li>`;
+            } else {
+                sortedClasses.forEach(([className, count], i) => {
+                    const progress = sortedClasses[0][1] > 0 ? (count / sortedClasses[0][1]) * 100 : 0;
+                    lobbyClassList.innerHTML += `
+                        <li class="space-y-1">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="font-bold text-slate-700">${i===0?'🏆':i+1+'階.'} ${className}</span>
+                                <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-black">${count} 本</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div class="bg-indigo-600 h-full rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+                            </div>
+                        </li>
+                    `;
+                });
+            }
+
+            // 渲染最新出入境動態實況牆
+            const liveStream = document.getElementById("lobbyLiveStream");
+            liveStream.innerHTML = "";
+            const recentLogs = certifiedLogs.slice().reverse().slice(0, 10);
+
+            if(recentLogs.length === 0) {
+                liveStream.innerHTML = `<p class="text-slate-400 text-center py-6">目前暫無通關簽證記錄...</p>`;
+            } else {
+                recentLogs.forEach(l => {
+                    const cat = CATEGORY_MAP[l.category] || { emoji: "📖", label: "其他" };
+                    liveStream.innerHTML += `
+                        <div class="p-2.5 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between text-[11px] panel-animate">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">${cat.emoji}</span>
+                                <div>
+                                    <p class="text-slate-800 font-bold">${l.studentName} <span class="text-slate-400 font-normal">通過認證</span></p>
+                                    <p class="text-slate-500 truncate max-w-[150px] md:max-w-[180px]">《${l.title}》</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md font-bold uppercase tracking-widest">APPROVED</span>
+                        </div>
+                    `;
+                });
+            }
+
+            // 渲染首頁全校分佈雷達圖
+            buildLobbyRadar(certifiedLogs);
+        }
+
+        // 首頁雷達圖繪製
+        function buildLobbyRadar(certifiedLogs) {
+            const counts = { literature: 0, science: 0, history: 0, art: 0, growth: 0, fantasy: 0 };
+            certifiedLogs.forEach(l => { if(counts[l.category] !== undefined) counts[l.category]++; });
+
+            const ctx = document.getElementById("lobbyRadarChart").getContext("2d");
+            if(chartInstances.lobbyRadar) chartInstances.lobbyRadar.destroy();
+            chartInstances.lobbyRadar = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['文學故事', '科普自然', '歷史社會', '藝術美學', '自我成長', '奇幻魔法'],
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: 'rgba(245, 193, 88, 0.2)',
+                        borderColor: '#e5c158',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#1e2d42'
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { r: { ticks: { display: false } } }
+                }
+            });
+        }
+
+        // ==================== [ 1. 學生端主介面渲染邏輯 ] ====================
         function renderStudentView() {
             const myLogs = appState.logs.filter(l => l.uid.toString() === activeUser.uid.toString());
             const profile = appState.users.find(u => u.uid.toString() === activeUser.uid.toString()) || { level: 1, exp: 0 };
             
-            // 計算護照指標資料
+            // 計算各項指標
             const approvedCount = myLogs.filter(l => l.status === "已核章").length;
             const totalPages = myLogs.reduce((sum, l) => sum + (Number(l.pages) || 0), 0);
             
@@ -429,7 +677,7 @@
             document.getElementById("statPages").innerText = `${totalPages} 頁`;
             document.getElementById("statApproved").innerText = `${myLogs.length > 0 ? Math.round((approvedCount/myLogs.length)*100) : 0}%`;
 
-            // 渲染學生簽證流水帳
+            // 渲染閱讀日誌流水帳
             const container = document.getElementById("studentLogContainer");
             container.innerHTML = myLogs.length === 0 ? `<p class="text-xs text-slate-400 text-center py-6">目前尚未有任何閱讀冒險足跡，請使用上方表單新增！</p>` : "";
             
@@ -451,18 +699,18 @@
                 `;
             });
 
-            // 排行榜生成
-            const leaderboard = document.getElementById("classRankList");
-            leaderboard.innerHTML = "";
+            // 學生端班級榜生成
+            const classLeaderboard = document.getElementById("classRankList");
+            classLeaderboard.innerHTML = "";
             const counts = {};
             appState.logs.forEach(l => { counts[l.studentName] = (counts[l.studentName] || 0) + 1; });
             const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 3);
             if(sorted.length === 0) {
-                leaderboard.innerHTML = `<li class="text-xs text-slate-400">目前暫無數據</li>`;
+                classLeaderboard.innerHTML = `<li class="text-xs text-slate-400">目前暫無數據</li>`;
             } else {
                 sorted.forEach(([name, count], index) => {
                     const icons = ["🥇", "🥈", "🥉"];
-                    leaderboard.innerHTML += `
+                    classLeaderboard.innerHTML += `
                         <li class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl text-xs">
                             <span class="font-bold text-slate-700">${icons[index]} 第 ${index+1} 名 - ${name}</span>
                             <span class="bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">${count} 本</span>
@@ -471,13 +719,14 @@
                 });
             }
 
-            // 渲染徽章牆
+            // 渲染個人解鎖徽章
             renderStudentBadges(myLogs.length, totalPages);
 
-            // 更新雷達可視化數據
+            // 更新個人雷達圖
             buildStudentRadar(myLogs);
         }
 
+        // 渲染個人徽章牆
         function renderStudentBadges(bookCount, pageCount) {
             const grid = document.getElementById("studentBadgesGrid");
             grid.innerHTML = "";
@@ -501,7 +750,7 @@
             document.getElementById("badgeUnlockCount").innerText = `${unlocked}/${rules.length}`;
         }
 
-        // 學生提交閱讀紀錄
+        // 學生提交閱讀紀錄表單 (CORS 優化配置)
         async function handleStudentFormSubmit(e) {
             e.preventDefault();
             toggleLoader(true);
@@ -518,21 +767,26 @@
             };
 
             try {
-                const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify(data) });
+                // 優化：採用 text/plain Content-Type 安全穿透 CORS preflight 限制
+                const res = await fetch(GAS_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(data) 
+                });
                 const json = await res.json();
                 if(json.status === "success") {
-                    showCustomToast("🛫 成功寫入雲端試算表！您已獲得 50 EXP 點數！", "success");
+                    showCustomToast("🛫 成功提報閱讀紀錄！經驗值加 50 EXP！已送入導師審核庫。", "success");
                     document.getElementById("addBookForm").reset();
                     await syncCloudData();
                 }
             } catch(e) {
-                showCustomToast("雲端連線失敗，請檢查網路連線", "error");
+                showCustomToast("提報寫入失敗，請確認網路與試算表欄位設定", "error");
             } finally {
                 toggleLoader(false);
             }
         }
 
-        // 可視化 Chart.js Radar
+        // 學生個人雷達圖
         function buildStudentRadar(myLogs) {
             const counts = { literature: 0, science: 0, history: 0, art: 0, growth: 0, fantasy: 0 };
             myLogs.forEach(l => { if(counts[l.category] !== undefined) counts[l.category]++; });
@@ -544,7 +798,7 @@
                 data: {
                     labels: ['文學故事', '科普自然', '歷史社會', '藝術美學', '自我成長', '奇幻魔法'],
                     datasets: [{
-                        label: '探險次數',
+                        label: '冒險次數',
                         data: Object.values(counts),
                         backgroundColor: 'rgba(79, 70, 229, 0.15)',
                         borderColor: 'rgba(79, 70, 229, 1)',
@@ -559,14 +813,14 @@
             });
         }
 
-        // ==================== [ 教師端指導模組 ] ====================
+        // ==================== [ 2. 教師指導端渲染邏輯 ] ====================
         function renderTeacherView() {
             const tbody = document.getElementById("reviewTableBody");
             tbody.innerHTML = "";
             const pendings = appState.logs.filter(l => l.status === "待審核");
 
             if (pendings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">🎉 全班表現優良，目前所有閱讀護照皆已核章完畢！</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">🎉 全班表現優良，目前所有閱讀紀錄皆已審核認證完畢！</td></tr>`;
                 return;
             }
 
@@ -578,7 +832,7 @@
                     <td class="p-3"><b>${l.title}</b><br><span class="text-slate-400">${l.author} (${l.pages} 頁)</span></td>
                     <td class="p-3 font-serif italic text-slate-600 max-w-xs leading-relaxed">「${l.review}」</td>
                     <td class="p-3 text-center space-x-1 whitespace-nowrap">
-                        <button onclick="executeReview('${l.id}', '已核章')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-xl font-bold cursor-pointer transition">通過核章</button>
+                        <button onclick="executeReview('${l.id}', '已核章')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-xl font-bold cursor-pointer transition">通過認證</button>
                         <button onclick="executeReview('${l.id}', '不通過')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded-xl font-bold cursor-pointer transition">退回</button>
                     </td>
                 `;
@@ -586,25 +840,26 @@
             });
         }
 
-        // 執行核章動作
+        // 審核提報心得 (CORS 優化配置)
         function executeReview(logId, status) {
             showCustomConfirm(
-                "確認核章狀態",
-                `您確定要把此篇心得設定為 [${status}] 嗎？此動作將即時變更 Google 試算表狀態。`,
+                "簽章認證確認",
+                `您確定要將此項閱讀提報的心得狀態標記為 [${status}] 嗎？此動作將立即同步變更 Google 雲端資料庫。`,
                 async () => {
                     toggleLoader(true);
                     try {
                         const res = await fetch(GAS_URL, {
                             method: "POST",
+                            headers: { "Content-Type": "text/plain;charset=utf-8" },
                             body: JSON.stringify({ action: "reviewLog", logId: logId, status: status })
                         });
                         const data = await res.json();
                         if(data.status === "success") {
-                            showCustomToast(`審查設定完畢：[${status}]`, "success");
+                            showCustomToast(`審核完成！狀態已設定為: ${status}`, "success");
                             await syncCloudData();
                         }
                     } catch(e) {
-                        showCustomToast("與雲端連線失敗，請稍後重試。", "error");
+                        showCustomToast("審查設定寫入失敗，請確認與試算表的雲端通訊。", "error");
                     } finally {
                         toggleLoader(false);
                     }
@@ -612,7 +867,31 @@
             );
         }
 
-        // 導出 Excel / CSV
+        // 班導師派發任務 (CORS 優化配置)
+        async function handleTeacherTaskSubmit() {
+            const title = document.getElementById("taskTitleInput").value;
+            const book = document.getElementById("taskBookInput").value;
+            if(!title || !book) return showCustomToast("請填寫完整的指派任務資訊", "error");
+
+            toggleLoader(true);
+            try {
+                await fetch(GAS_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "addTask", classId: "C01", taskTitle: title, targetBook: book, dueDate: "2026-08-31" })
+                });
+                showCustomToast("🎯 班級指定任務指派成功！已同步至雲端資料庫。", "success");
+                document.getElementById("taskTitleInput").value = "";
+                document.getElementById("taskBookInput").value = "";
+                await syncCloudData();
+            } catch(e) {
+                showCustomToast("任務指派發布失敗", "error");
+            } finally {
+                toggleLoader(false);
+            }
+        }
+
+        // 班級 Excel 導出
         function triggerCsvExport() {
             let csv = "data:text/csv;charset=utf-8,\uFEFF流水號,提報人,書籍名稱,總頁數,心得感想,認證狀態\n";
             appState.logs.forEach(l => {
@@ -620,34 +899,11 @@
             });
             const link = document.createElement("a");
             link.href = encodeURI(csv);
-            link.download = `閱讀護照統計報表_${new Date().toISOString().split('T')[0]}.csv`;
+            link.download = `全班閱讀護照數據表_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
         }
 
-        // 發布指定任務
-        async function handleTeacherTaskSubmit() {
-            const title = document.getElementById("taskTitleInput").value;
-            const book = document.getElementById("taskBookInput").value;
-            if(!title || !book) return showCustomToast("請填寫完整的指派欄位", "error");
-
-            toggleLoader(true);
-            try {
-                await fetch(GAS_URL, {
-                    method: "POST",
-                    body: JSON.stringify({ action: "addTask", classId: "C01", taskTitle: title, targetBook: book, dueDate: "2026-08-31" })
-                });
-                showCustomToast("🎯 班級任務指派成功，已儲存至雲端！", "success");
-                document.getElementById("taskTitleInput").value = "";
-                document.getElementById("taskBookInput").value = "";
-                await syncCloudData();
-            } catch(e) {
-                showCustomToast("任務指派寫入失敗", "error");
-            } finally {
-                toggleLoader(false);
-            }
-        }
-
-        // ==================== [ 全校管理者模組 ] ====================
+        // ==================== [ 3. 全校管理者端渲染邏輯 ] ====================
         function renderAdminView() {
             document.getElementById("admTotalUsers").innerText = `${appState.users ? appState.users.length : 0} 人`;
             document.getElementById("admTotalLogs").innerText = `${appState.logs ? appState.logs.length : 0} 筆`;
@@ -657,6 +913,7 @@
             }
         }
 
+        // 管理員發布公告 (CORS 優化配置)
         async function postAdminAnnounce(e) {
             e.preventDefault();
             const t = document.getElementById("admAnnTitle").value;
@@ -665,18 +922,22 @@
 
             toggleLoader(true);
             try {
-                await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "addAnnouncement", title: t, content: c }) });
-                showCustomToast("📣 全校公告廣播發布成功！", "success");
+                await fetch(GAS_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "addAnnouncement", title: t, content: c }) 
+                });
+                showCustomToast("📣 全校公告廣播發布成功！跑馬燈已即時更新。", "success");
                 document.getElementById("admAnnForm").reset();
                 await syncCloudData();
             } catch(e) {
-                showCustomToast("公告發布失敗", "error");
+                showCustomToast("公告廣播發布失敗", "error");
             } finally {
                 toggleLoader(false);
             }
         }
 
-        // ==================== [ ISBN 相機掃描模擬器 ] ====================
+        // ==================== [ ISBN 掃描器與模擬降級 ] ====================
         function triggerIsbnCamera() {
             const container = document.getElementById("cameraBox");
             container.classList.remove("hidden");
@@ -688,20 +949,20 @@
                     stopIsbnCamera();
                     showCustomToast(`成功掃描 ISBN: ${code}！系統已自動完成書目帶入！`, "success");
                     document.getElementById("fTitle").value = "世界地理大探險 (自動帶入)";
-                    document.getElementById("fAuthor").value = "強納生·霍格 (自動帶入)";
+                    document.getElementById("fAuthor").value = "強納生·霍格";
                     document.getElementById("fPages").value = 210;
                 },
                 () => {}
             ).catch(() => {
-                showCustomToast("相機啟用失敗：您的裝置或瀏覽器未給予相機權限。系統將為您開啟自動帶入模擬測試！", "error");
+                showCustomToast("相機啟用授權未通過。系統已自動開啟模擬自動填寫測試！", "error");
                 container.classList.add("hidden");
-                // 模擬降級測試
+                // 模擬自動帶入
                 setTimeout(() => {
                     document.getElementById("fTitle").value = "世界地理大探險 (自動模擬)";
                     document.getElementById("fAuthor").value = "強納生·霍格";
                     document.getElementById("fPages").value = 210;
-                    showCustomToast("已自動帶入模擬書籍數據，您可以直接修改填寫！", "success");
-                }, 1000);
+                    showCustomToast("模擬書目代入完成，您可以直接編輯提交！", "success");
+                }, 800);
             });
         }
 
@@ -713,24 +974,26 @@
             }
         }
 
-        // ==================== [ 系統自訂 UI 工具 ] ====================
+        // ==================== [ 系統自訂 UI 工具模組 ] ====================
         function toggleLoader(show) {
             document.getElementById("loaderMask").classList.toggle("hidden", !show);
         }
 
+        // 切換精美系統護照外殼主題
         function changeSystemTheme(themeKey) {
             const theme = THEME_MAP[themeKey];
             if (!theme) return;
             
             const header = document.getElementById("mainHeader");
             const card = document.getElementById("passportCoverCard");
-            const title = document.getElementById("stuPassportTitle");
             
             header.style.backgroundColor = themeKey === 'blue' ? '#1e2d42' : themeKey === 'green' ? '#1c352d' : themeKey === 'burgundy' ? '#4a1525' : '#2e1a47';
             header.style.color = themeKey === 'blue' ? '#e5c158' : themeKey === 'green' ? '#d4af37' : themeKey === 'burgundy' ? '#f3cd78' : '#e0b0ff';
             
-            card.className = `${theme.coverBg} ${theme.text} rounded-3xl p-6 shadow-xl border-4 ${theme.border} relative overflow-hidden transition-all duration-500`;
-            showCustomToast(`已切換護照外殼主題配色！`, "success");
+            if (card) {
+                card.className = `${theme.coverBg} ${theme.text} rounded-3xl p-6 shadow-xl border-4 ${theme.border} relative overflow-hidden transition-all duration-500`;
+            }
+            showCustomToast(`已將系統視覺包裝與護照外殼切換！`, "success");
         }
 
         // 自訂非同步 Toast 提示
@@ -755,7 +1018,7 @@
             }, 3500);
         }
 
-        // 自訂 Modal 確認視窗
+        // 自訂 Modal 雙重確認視窗
         function showCustomConfirm(title, message, onConfirm) {
             const modal = document.getElementById("customConfirmModal");
             document.getElementById("confirmTitle").innerText = title;
