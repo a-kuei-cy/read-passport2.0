@@ -454,7 +454,7 @@
 
         // 全域核心狀態快取
         let appState = { logs: [], users: [], tasks: [], announcements: [], classes: [] };
-        let activeUser = { uid: "S11201", name: "王小明", role: "student", classId: "C01" }; // 學生身份預載
+        let activeUser = { uid: "GUEST", name: "全校訪客", role: "lobby", classId: "" }; // 修改：預設停留在大廳首頁
         let chartInstances = { radar: null, lobbyRadar: null };
         let qrScanner = null;
 
@@ -478,6 +478,7 @@
 
         // 系統掛載
         document.addEventListener("DOMContentLoaded", async function() {
+            document.getElementById("roleSelect").value = activeUser.role; // 新增：確保右上角下拉選單與預設大廳身分同步
             await syncCloudData();
 
             // 監聽快捷身份變更
