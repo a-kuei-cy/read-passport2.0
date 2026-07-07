@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧電子閱讀護照系統 v1.0 - 全校大廳總覽</title>
+    <title>智慧電子閱讀護照系統 v2.0</title>
     <!-- 使用穩定版 Tailwind CSS v3 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Chart.js 圖表庫 -->
@@ -11,39 +11,20 @@
     <!-- 引入 html5-qrcode 條碼掃描外掛 -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        /* 視覺動畫優化 */
-        .view-panel {
-            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        /* 隱藏滾動條但保留滾動功能 */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        /* 視覺動畫與滾動條優化 */
+        .view-panel { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         /* 仿實體戳印鋼印微風格式 */
-        .stamp-seal {
-            font-weight: 900;
-            letter-spacing: 1px;
-            transform: rotate(-12deg);
-            text-transform: uppercase;
-        }
-        /* 限制背景圖高度與排版防呆 */
-        .bg-grid-pattern {
-            background-image: radial-gradient(rgba(229, 193, 88, 0.1) 1px, transparent 0);
-            background-size: 24px 24px;
-        }
+        .stamp-seal { font-weight: 900; letter-spacing: 1px; transform: rotate(-12deg); text-transform: uppercase; }
+        /* 背景網格圖案 */
+        .bg-grid-pattern { background-image: radial-gradient(rgba(229, 193, 88, 0.1) 1px, transparent 0); background-size: 24px 24px; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen selection:bg-indigo-500 selection:text-white pb-12">
 
-    <!-- 頂部導航列 -->
+    <!-- ==================== 頂部導航列 ==================== -->
     <header id="mainHeader" class="bg-[#1e2d42] text-[#e5c158] transition-colors duration-500 shadow-lg px-6 py-4 sticky top-0 z-40 flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex items-center gap-3 cursor-pointer" onclick="navigateToLobby()">
             <span class="text-3xl animate-pulse">🏛️</span>
@@ -53,8 +34,12 @@
             </div>
         </div>
 
-        <!-- 身份與主題快速調度區 -->
         <div class="flex flex-wrap items-center gap-3">
+            <!-- 雲端同步狀態燈 -->
+            <div id="syncStatusIndicator" class="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span><span>雲端連線成功</span>
+            </div>
+
             <!-- 護照主題色切換 -->
             <div class="flex items-center gap-1.5 bg-black/25 px-2.5 py-1.5 rounded-xl border border-white/10 text-xs">
                 <span class="text-slate-300">主題:</span>
@@ -66,214 +51,167 @@
                 </div>
             </div>
 
-            <!-- 控制台快捷切換下拉選單 -->
+            <!-- 身份切換選單 -->
             <select id="roleSelect" class="bg-black/25 text-white text-xs border border-white/10 rounded-xl p-2 focus:outline-none cursor-pointer font-bold">
                 <option value="lobby">🌐 全校護照大廳首頁</option>
-                <option value="student">🎒 個人閱讀護照 (學號: S11201)</option>
-                <option value="teacher">🧑‍🏫 教師指導入口 (班導師)</option>
-                <option value="admin">🏛️ 全校管理員入口 (資訊處)</option>
+                <option value="student_login">🎒 學生入口 (班級/姓名登入)</option>
+                <option value="teacher">🧑‍🏫 教師指導入口</option>
+                <option value="admin">🏛️ 全校管理員入口</option>
             </select>
 
-            <!-- 右端當前登入提示 -->
-            <div class="text-xs bg-black/40 py-1.5 px-3 rounded-xl border border-white/10 text-right min-w-[110px]" id="userStatusTag">
+            <div class="text-xs bg-black/40 py-1.5 px-3 rounded-xl border border-white/10 text-right min-w-[110px]">
                 <span class="font-bold block text-yellow-400" id="headerUserName">全校訪客</span>
                 <span class="text-[9px] text-slate-300 uppercase block font-mono" id="headerUserRole">LOBBY</span>
             </div>
         </div>
     </header>
 
-    <!-- 系統主控台容器 -->
+    <!-- ==================== 系統主控台容器 ==================== -->
     <main class="max-w-7xl w-full mx-auto p-4 md:p-6 min-h-[calc(100vh-140px)]">
         
-        <!-- ==================== 0. 全校閱讀大廳首頁 (新首頁看板) ==================== -->
+        <!-- [視圖 0] 全校大廳首頁 -->
         <section id="viewLobby" class="view-panel space-y-6">
-            
-            <!-- 壯麗巨幅歡迎區 -->
             <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden border border-indigo-500/20 bg-grid-pattern">
                 <div class="absolute -right-10 -bottom-10 text-9xl opacity-10 font-bold select-none pointer-events-none">WISDOM</div>
                 <div class="relative z-10 max-w-3xl">
                     <span class="bg-amber-400/20 text-amber-300 text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full border border-amber-400/30">School Reading Republic</span>
                     <h2 class="text-2xl md:text-4xl font-serif font-extrabold mt-3 tracking-wider text-yellow-100">智慧閱讀護照共和國</h2>
                     <p class="text-xs md:text-sm text-slate-300 mt-2 leading-relaxed">
-                        「讀萬卷書，行萬里路。」這裡記錄了全校旅行家征服知識版圖的精彩冒險。快拿起您的閱讀護照，加蓋專屬的國家簽證印章，開啟全新的旅途吧！
+                        這裡記錄了全校旅行家征服知識版圖的精彩冒險。快拿起您的閱讀護照，加蓋專屬的國家簽證印章，開啟全新的旅途吧！
                     </p>
                 </div>
                 
-                <!-- 快捷三大入口傳送門卡片 -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-                    <!-- 學生卡 -->
-                    <div onclick="setRole('student')" class="bg-white/10 hover:bg-white/15 border border-white/10 p-5 rounded-2xl cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group">
+                    <div onclick="setRole('student_login')" class="bg-white/10 hover:bg-white/15 border border-white/10 p-5 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 hover:shadow-lg group">
                         <div class="text-3xl group-hover:scale-110 transition-transform">🎒</div>
                         <h4 class="font-bold text-sm text-yellow-300 mt-3">進入個人閱讀護照</h4>
-                        <p class="text-[11px] text-slate-300 mt-1 leading-normal">登錄新書、撰寫心得感想、解鎖榮譽徽章、查看雷達圖。</p>
+                        <p class="text-[11px] text-slate-300 mt-1">登錄新書、撰寫心得或上傳照片，查看成就徽章。</p>
                         <span class="text-[10px] text-yellow-400 font-bold mt-3 block group-hover:underline">即刻啟航 →</span>
                     </div>
-                    <!-- 教師卡 -->
-                    <div onclick="setRole('teacher')" class="bg-white/10 hover:bg-white/15 border border-white/10 p-5 rounded-2xl cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group">
+                    <div onclick="setRole('teacher')" class="bg-white/10 hover:bg-white/15 border border-white/10 p-5 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 hover:shadow-lg group">
                         <div class="text-3xl group-hover:scale-110 transition-transform">🧑‍🏫</div>
                         <h4 class="font-bold text-sm text-yellow-300 mt-3">教師指導管理中心</h4>
-                        <p class="text-[11px] text-slate-300 mt-1 leading-normal">審查班級讀書心得、加蓋簽章認證、派發指定任務、匯出報表。</p>
-                        <span class="text-[10px] text-yellow-400 font-bold mt-3 block group-hover:underline">進入指導控台 →</span>
+                        <p class="text-[11px] text-slate-300 mt-1">審查班級讀書心得與相片、加蓋簽章認證、匯出報表。</p>
+                        <span class="text-[10px] text-yellow-400 font-bold mt-3 block group-hover:underline">進入控台 →</span>
                     </div>
-                    <!-- 管理員卡 -->
-                    <div onclick="setRole('admin')" class="bg-white/10 hover:bg-white/15 border border-white/10 p-5 rounded-2xl cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg group">
+                    <div onclick="setRole('admin')" class="bg-white/10 hover:bg-white/15 border border-white/10 p-5 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 hover:shadow-lg group">
                         <div class="text-3xl group-hover:scale-110 transition-transform">🏛️</div>
                         <h4 class="font-bold text-sm text-yellow-300 mt-3">全校資訊教務後台</h4>
-                        <p class="text-[11px] text-slate-300 mt-1 leading-normal">掌握全校大數據分析、推播滾動公告、直接編輯雲端資料庫。</p>
-                        <span class="text-[10px] text-yellow-400 font-bold mt-3 block group-hover:underline">系統維護後台 →</span>
+                        <p class="text-[11px] text-slate-300 mt-1">掌握大數據分析、推播滾動公告、編輯雲端庫。</p>
+                        <span class="text-[10px] text-yellow-400 font-bold mt-3 block group-hover:underline">系統後台 →</span>
                     </div>
                 </div>
             </div>
 
-            <!-- 全校累積冒險成果大數據指標 -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <span class="text-xs text-slate-400 font-bold block">全校累積認證本數</span>
-                    <div class="flex items-baseline gap-1.5 mt-2">
-                        <span class="text-2xl md:text-3xl font-serif font-black text-[#1e2d42]" id="lobbyTotalBooks">0</span>
-                        <span class="text-xs text-slate-500">本</span>
-                    </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <span class="text-xs text-slate-400 font-bold">全校累積認證</span>
+                    <div class="mt-2"><span class="text-2xl md:text-3xl font-serif font-black text-[#1e2d42]" id="lobbyTotalBooks">0</span><span class="text-xs text-slate-500 ml-1">本</span></div>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <span class="text-xs text-slate-400 font-bold block">全校知識探險深度</span>
-                    <div class="flex items-baseline gap-1.5 mt-2">
-                        <span class="text-2xl md:text-3xl font-serif font-black text-emerald-700" id="lobbyTotalPages">0</span>
-                        <span class="text-xs text-slate-500">頁</span>
-                    </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <span class="text-xs text-slate-400 font-bold">全校探險深度</span>
+                    <div class="mt-2"><span class="text-2xl md:text-3xl font-serif font-black text-emerald-700" id="lobbyTotalPages">0</span><span class="text-xs text-slate-500 ml-1">頁</span></div>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <span class="text-xs text-slate-400 font-bold block">已啟航旅行家總數</span>
-                    <div class="flex items-baseline gap-1.5 mt-2">
-                        <span class="text-2xl md:text-3xl font-serif font-black text-indigo-700" id="lobbyTotalUsers">0</span>
-                        <span class="text-xs text-slate-500">位</span>
-                    </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <span class="text-xs text-slate-400 font-bold">已啟航旅行家總數</span>
+                    <div class="mt-2"><span class="text-2xl md:text-3xl font-serif font-black text-indigo-700" id="lobbyTotalUsers">0</span><span class="text-xs text-slate-500 ml-1">位</span></div>
                 </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <span class="text-xs text-slate-400 font-bold block">全校平均滿意評分</span>
-                    <div class="flex items-baseline gap-1.5 mt-2">
-                        <span class="text-2xl md:text-3xl font-serif font-black text-amber-500" id="lobbyAvgRating">0.0</span>
-                        <span class="text-xs text-slate-500">★</span>
-                    </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <span class="text-xs text-slate-400 font-bold">全校平均評分</span>
+                    <div class="mt-2"><span class="text-2xl md:text-3xl font-serif font-black text-amber-500" id="lobbyAvgRating">0.0</span><span class="text-xs text-slate-500 ml-1">★</span></div>
                 </div>
             </div>
 
-            <!-- 全校圖表分佈與榮譽榜 (2欄版面) -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
-                <!-- 左側：全校探索比例 (5格) -->
-                <div class="lg:col-span-5 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                    <h3 class="font-bold text-sm text-slate-700 flex items-center gap-2 border-b pb-2">
-                        <span>📊 六大國度探索熱度比例</span>
-                    </h3>
+                <div class="lg:col-span-5 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-sm text-slate-700 border-b pb-2 mb-4">📊 六大國度探索熱度</h3>
                     <div class="relative min-h-[220px] flex items-center justify-center">
                         <canvas id="lobbyRadarChart" class="max-h-56"></canvas>
                     </div>
                 </div>
-
-                <!-- 右側：班級競賽榮譽榜 & 最新動態 (7格) -->
                 <div class="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- 班級榮譽對抗榜 -->
-                    <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
-                        <h3 class="font-bold text-sm text-slate-700 border-b pb-2">🏆 班級累計認證競賽榜</h3>
-                        <ul class="space-y-2.5 text-xs" id="lobbyClassList">
-                            <!-- 動態渲染 -->
-                        </ul>
+                    <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+                        <h3 class="font-bold text-sm text-slate-700 border-b pb-2 mb-3">🏆 班級累計競賽榜</h3>
+                        <ul class="space-y-2.5 text-xs" id="lobbyClassList"></ul>
                     </div>
-
-                    <!-- 即時出入境核章動態牆 -->
-                    <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
-                        <h3 class="font-bold text-sm text-slate-700 border-b pb-2 flex justify-between items-center">
-                            <span>📡 最新核章出入境實況</span>
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                        </h3>
-                        <div id="lobbyLiveStream" class="space-y-3 max-h-[220px] overflow-y-auto no-scrollbar">
-                            <!-- 動態串流 -->
-                        </div>
+                    <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+                        <h3 class="font-bold text-sm text-slate-700 border-b pb-2 mb-3">📡 最新出入境實況</h3>
+                        <div id="lobbyLiveStream" class="space-y-3 max-h-[220px] overflow-y-auto no-scrollbar"></div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ==================== 1. 學生端主介面 ==================== -->
+        <!-- [視圖 1] 學生端個人護照 -->
         <section id="viewStudent" class="view-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- 左側個人統計、徽章與排行榜 (4格) -->
             <div class="lg:col-span-4 space-y-6">
-                <!-- 擬真精裝護照封面 -->
+                <!-- 護照封皮 -->
                 <div id="passportCoverCard" class="bg-[#1e2d42] text-[#e5c158] rounded-3xl p-6 shadow-xl border-4 border-[#e5c158] relative overflow-hidden transition-all duration-500">
-                    <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none" />
+                    <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none"></div>
                     <p class="text-[9px] tracking-widest font-mono uppercase opacity-75">Digital Reading Passport</p>
-                    <h3 class="text-2xl font-serif font-extrabold mt-1 tracking-wider" id="stuPassportTitle">王小明的閱讀護照</h3>
+                    <h3 class="text-2xl font-serif font-extrabold mt-1 tracking-wider" id="stuPassportTitle">---</h3>
+                    <p class="text-[10px] mt-1 text-slate-300" id="stuClassTag">班級: ---</p>
                     
-                    <div class="mt-6 bg-white/10 p-4 rounded-2xl backdrop-blur-md flex items-center gap-3 border border-white/5">
+                    <div class="mt-6 bg-white/10 p-4 rounded-2xl backdrop-blur-md flex items-center gap-3">
                         <div class="text-4xl filter drop-shadow">🦉</div>
                         <div>
-                            <p class="text-[10px] text-slate-300">冒險航行成就級別</p>
-                            <h4 class="text-sm font-bold font-serif" id="stuLevelTitle">等級 -- · 讀者</h4>
+                            <p class="text-[10px] text-slate-300">冒險成就級別</p>
+                            <h4 class="text-sm font-bold font-serif" id="stuLevelTitle">等級 1 · 新手</h4>
                         </div>
                     </div>
                     
                     <div class="grid grid-cols-3 gap-2 text-center mt-6 pt-4 border-t border-white/10 text-xs font-mono">
-                        <div><p class="text-slate-300 text-[10px]">累計讀本</p><p class="text-base font-bold mt-0.5 text-white" id="statBooks">0 本</p></div>
-                        <div><p class="text-slate-300 text-[10px]">閱讀頁數</p><p class="text-base font-bold mt-0.5 text-white" id="statPages">0 頁</p></div>
-                        <div><p class="text-slate-300 text-[10px]">認證通過</p><p class="text-base font-bold mt-0.5 text-white" id="statApproved">0%</p></div>
+                        <div><p class="text-slate-300 text-[10px]">累計讀本</p><p class="text-base font-bold text-white mt-0.5" id="statBooks">0 本</p></div>
+                        <div><p class="text-slate-300 text-[10px]">閱讀頁數</p><p class="text-base font-bold text-white mt-0.5" id="statPages">0 頁</p></div>
+                        <div><p class="text-slate-300 text-[10px]">認證率</p><p class="text-base font-bold text-white mt-0.5" id="statApproved">0%</p></div>
                     </div>
                 </div>
 
-                <!-- 徽章牆區塊 -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <h4 class="font-bold text-xs text-slate-700 mb-3 flex items-center gap-2">📋 班級挑戰任務</h4>
+                    <div id="studentTasksList" class="space-y-2 text-xs"></div>
+                </div>
+
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                     <h4 class="font-bold text-xs text-slate-500 mb-3 flex justify-between">
-                        <span>🏅 解鎖的冒險徽章</span>
-                        <span class="text-xs text-indigo-600 font-bold" id="badgeUnlockCount">0/4</span>
+                        <span>🏅 解鎖徽章</span><span class="text-indigo-600 font-bold" id="badgeUnlockCount">0/4</span>
                     </h4>
-                    <div class="grid grid-cols-4 gap-3 text-center" id="studentBadgesGrid">
-                        <!-- 動態生成 -->
-                    </div>
+                    <div class="grid grid-cols-4 gap-3 text-center" id="studentBadgesGrid"></div>
                 </div>
 
-                <!-- 班級閱讀菁英榜 -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                    <h4 class="font-bold text-xs text-slate-700 mb-3 flex items-center gap-2">🏆 班級閱讀菁英榜 (Top 3)</h4>
-                    <ul class="space-y-2.5 text-xs" id="classRankList">
-                        <!-- 動態統計 -->
-                    </ul>
-                </div>
-
-                <!-- 統計領域雷達 -->
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                    <h4 class="font-bold text-xs text-slate-700 mb-2">📊 閱讀領域雷達分佈</h4>
+                    <h4 class="font-bold text-xs text-slate-700 mb-2">📊 領域雷達分佈</h4>
                     <canvas id="chartRadar" class="max-h-48 mx-auto"></canvas>
                 </div>
             </div>
 
-            <!-- 右側新增表單與歷史紀錄 (8格) -->
             <div class="lg:col-span-8 space-y-6">
-                <!-- 新增閱讀紀錄 -->
+                <!-- 新增紀錄表單 -->
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
                     <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b pb-4 mb-4">
-                        <h3 class="font-bold text-base text-slate-800 flex items-center gap-2">✍️ 登錄新書籍／加蓋旅行簽證</h3>
-                        <button onclick="triggerIsbnCamera()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold py-2 px-3 rounded-xl shadow-md shadow-indigo-600/10 transition duration-300 cursor-pointer flex items-center gap-1.5">
-                            📷 掃描書籍條碼 (ISBN / QR Code)
+                        <h3 class="font-bold text-base text-slate-800 flex items-center gap-2">✍️ 登錄新書籍／加蓋簽證</h3>
+                        <button type="button" onclick="triggerIsbnCamera()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold py-2 px-3 rounded-xl shadow-md transition">
+                            📷 掃描條碼 (ISBN)
                         </button>
                     </div>
 
-                    <!-- html5-qrcode 相機掛載容器 -->
                     <div id="cameraBox" class="hidden bg-slate-900 p-4 rounded-2xl mb-4 text-center">
                         <div id="scannerView" class="w-full max-w-xs mx-auto rounded-xl overflow-hidden border border-slate-700"></div>
-                        <button onclick="stopIsbnCamera()" class="mt-3 text-white bg-rose-600 text-[11px] px-3 py-1.5 rounded-lg font-bold cursor-pointer">關閉相機鏡頭</button>
+                        <button type="button" onclick="stopIsbnCamera()" class="mt-3 text-white bg-rose-600 text-[11px] px-3 py-1.5 rounded-lg font-bold">關閉相機</button>
                     </div>
 
                     <form id="addBookForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1">書籍名稱 *</label>
-                            <input type="text" id="fTitle" required class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <input type="text" id="fTitle" required class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1">作者</label>
-                            <input type="text" id="fAuthor" class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <input type="text" id="fAuthor" class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1">分類領域</label>
-                            <select id="fCategory" class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs cursor-pointer focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <select id="fCategory" class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs">
                                 <option value="literature">🎭 文學故事</option>
                                 <option value="science">🔬 科普大自然</option>
                                 <option value="history">🏛️ 歷史社會</option>
@@ -283,182 +221,169 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">書籍總頁數 *</label>
-                            <input type="number" id="fPages" required class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="請填寫數字">
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1">總頁數 *</label>
+                            <input type="number" id="fPages" required class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs">
                         </div>
-                        <div class="sm:col-span-2">
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">推薦滿意度</label>
-                            <select id="fRating" class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs cursor-pointer focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                <option value="5">⭐⭐⭐⭐⭐ 非常推薦，一定要讀！</option>
-                                <option value="4">⭐⭐⭐⭐ 內容精采，收穫良多</option>
-                                <option value="3">⭐⭐⭐ 還不錯，可以一看</option>
-                                <option value="2">⭐⭐ 普普通通</option>
-                                <option value="1">⭐ 內容較枯燥</option>
-                            </select>
+                        
+                        <!-- 核心功能：心得繳交方式切換 -->
+                        <div class="sm:col-span-2 mt-2 border border-indigo-100 rounded-xl p-4 bg-white shadow-sm">
+                            <label class="block text-sm font-bold text-indigo-800 mb-3 pb-2 border-b border-indigo-50">選擇心得繳交方式 (二擇一) *</label>
+                            <div class="flex gap-6 mb-4">
+                                <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-slate-700">
+                                    <input type="radio" name="reviewType" value="text" checked onchange="toggleReviewUI()" class="accent-indigo-600 w-4 h-4">
+                                    ✍️ 鍵盤打字輸入
+                                </label>
+                                <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-slate-700">
+                                    <input type="radio" name="reviewType" value="photo" onchange="toggleReviewUI()" class="accent-indigo-600 w-4 h-4">
+                                    📸 上傳紙本照片 (學習單/畫圖)
+                                </label>
+                            </div>
+                            
+                            <!-- 文字輸入區 -->
+                            <div id="textReviewSection">
+                                <textarea id="fReviewText" rows="3" class="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 text-xs font-serif leading-relaxed" placeholder="請在此輸入您的心得感想..."></textarea>
+                            </div>
+                            
+                            <!-- 照片上傳區 -->
+                            <div id="photoReviewSection" class="hidden bg-slate-50 p-6 rounded-xl border border-dashed border-indigo-200 text-center">
+                                <input type="file" id="fReviewPhoto" accept="image/*" capture="environment" onchange="previewPhoto(event)" class="text-xs mx-auto block mb-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 cursor-pointer transition">
+                                <p class="text-[10px] text-slate-400 mb-2">請拍下您的紙本心得或繪圖。系統將為您自動壓縮圖片以節省空間。</p>
+                                <img id="photoPreview" class="hidden mx-auto mt-4 max-h-56 rounded-lg shadow-md border border-slate-200">
+                            </div>
                         </div>
+
                         <div class="sm:col-span-2">
-                            <label class="block text-[11px] font-bold text-slate-600 mb-1">心得筆記感想 (審核過關將成為護照實體簽證印章) *</label>
-                            <textarea id="fReview" rows="3" required class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs font-serif leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="分享這本書中最讓你感動的內容或啟發..."></textarea>
-                        </div>
-                        <div class="sm:col-span-2">
-                            <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition duration-300 cursor-pointer">
-                                🛫 提交認證紀錄並發送雲端
+                            <button type="submit" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md transition cursor-pointer mt-2">
+                                🛫 提交紀錄並發送雲端審查
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <!-- 出入境流水日誌 -->
                 <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-                    <h4 class="font-bold text-sm text-slate-800 mb-4">📜 我的閱讀出入境簽證流水日誌</h4>
-                    <div id="studentLogContainer" class="space-y-4">
-                        <!-- 動態生成 -->
-                    </div>
+                    <h4 class="font-bold text-sm text-slate-800 mb-4">📜 我的閱讀簽證日誌</h4>
+                    <div id="studentLogContainer" class="space-y-4"></div>
                 </div>
             </div>
         </section>
 
-        <!-- ==================== 2. 教師指導端介面 ==================== -->
+        <!-- [視圖 2] 教師指導端介面 -->
         <section id="viewTeacher" class="view-panel hidden bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-6">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4">
                 <div>
                     <h2 class="text-lg font-bold text-slate-800">🧑‍🏫 班級指導教師管理中心</h2>
-                    <p class="text-xs text-slate-400 mt-0.5">班級對應：五年甲班</p>
+                    <p class="text-xs text-slate-400 mt-0.5">可在此審查文字或照片心得，並加蓋核章</p>
                 </div>
                 <button onclick="triggerCsvExport()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition shadow-sm cursor-pointer">
-                    📥 匯出全班 Excel / CSV 報表
+                    📥 匯出全班報表
                 </button>
             </div>
 
-            <!-- 發布指定任務 -->
-            <div class="bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100">
-                <h4 class="text-xs font-bold text-indigo-900 mb-3 flex items-center gap-1.5">📌 派發指定閱讀任務</h4>
+            <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100">
+                <h4 class="text-xs font-bold text-indigo-900 mb-3">📌 派發指定閱讀任務</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                    <div>
-                        <label class="block text-[10px] text-indigo-700 font-bold mb-1">任務名稱</label>
-                        <input type="text" id="taskTitleInput" class="w-full p-2.5 bg-white text-xs border rounded-xl" placeholder="例如：科學研究週">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] text-indigo-700 font-bold mb-1">指定閱讀書目</label>
-                        <input type="text" id="taskBookInput" class="w-full p-2.5 bg-white text-xs border rounded-xl" placeholder="例如：法布爾昆蟲記">
-                    </div>
-                    <button onclick="handleTeacherTaskSubmit()" class="bg-indigo-600 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-indigo-700 transition cursor-pointer">
-                        指派班級任務
-                    </button>
+                    <div><label class="block text-[10px] text-indigo-700 mb-1">任務名稱</label><input type="text" id="taskTitleInput" class="w-full p-2.5 bg-white text-xs border rounded-xl"></div>
+                    <div><label class="block text-[10px] text-indigo-700 mb-1">指定書目</label><input type="text" id="taskBookInput" class="w-full p-2.5 bg-white text-xs border rounded-xl"></div>
+                    <button onclick="handleTeacherTaskSubmit()" class="bg-indigo-600 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-indigo-700 transition">指派任務</button>
                 </div>
             </div>
 
-            <!-- 審核區域 -->
             <div>
-                <h3 class="font-bold text-xs text-slate-500 mb-3 uppercase tracking-wider">🔔 待認證的學生護照心得提報</h3>
+                <h3 class="font-bold text-xs text-slate-500 mb-3 uppercase">🔔 待認證審核的心得提報</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>
                             <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold">
-                                <th class="p-3">學生</th>
-                                <th class="p-3">書籍規格</th>
-                                <th class="p-3">學生讀後感悟</th>
-                                <th class="p-3 text-center">簽章核定</th>
+                                <th class="p-3">學生</th><th class="p-3">書名規格</th><th class="p-3">心得內容 / 上傳照片</th><th class="p-3 text-center">簽章</th>
                             </tr>
                         </thead>
-                        <tbody id="reviewTableBody" class="divide-y divide-slate-100">
-                            <!-- 動態填入 -->
-                        </tbody>
+                        <tbody id="reviewTableBody" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- ==================== 3. 全校管理者端介面 ==================== -->
+        <!-- [視圖 3] 全校管理者端介面 -->
         <section id="viewAdmin" class="view-panel hidden bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-6">
-            <h2 class="text-lg font-bold text-slate-800 border-b pb-3">🏛️ 全校資訊教務處中央控制台</h2>
-            
-            <!-- 大數據看板 -->
+            <h2 class="text-lg font-bold text-slate-800 border-b pb-3">🏛️ 全校資訊教務處後台</h2>
             <div class="grid grid-cols-3 gap-4">
-                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center">
-                    <span class="text-[11px] text-slate-400 block">全校學生名冊</span>
-                    <span class="text-lg md:text-xl font-black text-slate-800" id="admTotalUsers">-- 人</span>
-                </div>
-                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center">
-                    <span class="text-[11px] text-slate-400 block">全校閱讀本數</span>
-                    <span class="text-lg md:text-xl font-black text-slate-800" id="admTotalLogs">-- 筆</span>
-                </div>
-                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-center">
-                    <span class="text-[11px] text-slate-400 block">系統發布公告</span>
-                    <span class="text-lg md:text-xl font-black text-slate-800" id="admTotalAnns">-- 則</span>
-                </div>
+                <div class="bg-slate-50 p-4 rounded-2xl border text-center"><span class="text-[11px] text-slate-400">總學生</span><span class="text-xl font-black block" id="admTotalUsers">--</span></div>
+                <div class="bg-slate-50 p-4 rounded-2xl border text-center"><span class="text-[11px] text-slate-400">總書目</span><span class="text-xl font-black block" id="admTotalLogs">--</span></div>
+                <div class="bg-slate-50 p-4 rounded-2xl border text-center"><span class="text-[11px] text-slate-400">總公告</span><span class="text-xl font-black block" id="admTotalAnns">--</span></div>
             </div>
-
-            <!-- 公告廣播與資料庫直接連結 -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                    <h4 class="font-bold text-xs text-slate-700 mb-3">📣 發布重要全校性系統跑馬燈公告</h4>
-                    <form id="admAnnForm" class="space-y-3" onsubmit="postAdminAnnounce(event)">
-                        <input type="text" id="admAnnTitle" required placeholder="公告主標題..." class="w-full p-2.5 bg-white border text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <textarea id="admAnnContent" rows="3" required placeholder="詳細公告內文..." class="w-full p-2.5 bg-white border text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                        <button type="submit" class="w-full bg-slate-900 text-white font-bold text-xs py-2.5 rounded-xl cursor-pointer hover:bg-slate-800 transition duration-300">確認並寫入試算表</button>
+                <div class="bg-slate-50 p-5 rounded-2xl border">
+                    <h4 class="font-bold text-xs text-slate-700 mb-3">📣 發布跑馬燈公告</h4>
+                    <form onsubmit="postAdminAnnounce(event)" class="space-y-3">
+                        <input type="text" id="admAnnTitle" required placeholder="標題" class="w-full p-2.5 border rounded-xl text-xs">
+                        <textarea id="admAnnContent" rows="3" required placeholder="內文" class="w-full p-2.5 border rounded-xl text-xs"></textarea>
+                        <button type="submit" class="w-full bg-slate-900 text-white font-bold text-xs py-2.5 rounded-xl">寫入試算表</button>
                     </form>
                 </div>
-                <div class="border rounded-2xl p-6 flex flex-col justify-between bg-indigo-50/20 border-indigo-100">
+                <div class="border rounded-2xl p-6 bg-indigo-50/20 border-indigo-100 flex flex-col justify-between">
                     <div>
-                        <h4 class="font-bold text-xs text-indigo-950 mb-1.5 flex items-center gap-1">💡 系統管理說明</h4>
-                        <p class="text-xs text-slate-500 leading-relaxed mt-2">
-                            本電子閱讀護照系統採用 Google Sheets 作為核心雲端資料儲存庫。全校的學生資料、各班名冊架構、以及徽章條件，均可直接在試算表中即時更新。
-                        </p>
+                        <h4 class="font-bold text-xs text-indigo-950 mb-2">💡 資料庫維護</h4>
+                        <p class="text-xs text-slate-500">本系統採用 Serverless 架構，所有名冊與紀錄可直接於 Google Sheets 中編輯。</p>
                     </div>
-                    <a href="#" id="dbLinkBtn" target="_blank" class="block text-center text-xs font-bold text-indigo-700 bg-indigo-100/60 border border-indigo-200 py-3 rounded-xl hover:bg-indigo-200 transition mt-4">
-                        🔗 點此一鍵開啟 Google 試算表後台資料庫
-                    </a>
+                    <a href="#" id="dbLinkBtn" target="_blank" class="block text-center text-xs font-bold text-indigo-700 bg-indigo-100 border border-indigo-200 py-3 rounded-xl hover:bg-indigo-200 mt-4">🔗 開啟 Google 試算表</a>
                 </div>
             </div>
         </section>
 
     </main>
 
-    <!-- 腳部宣告 -->
     <footer class="text-center text-xs text-slate-400 py-6 border-t border-slate-200 mt-12">
         <p>© 2026 智慧電子閱讀護照系統 · 智慧大冒險計劃</p>
     </footer>
 
-    <!-- 全域非同步讀取遮罩層 -->
-    <div id="loaderMask" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white font-bold text-xs hidden">
-        <div class="w-8 h-8 border-4 border-t-amber-400 border-white/20 rounded-full animate-spin mb-3"></div>
-        <span>正在連線智慧雲端資料庫，請稍候...</span>
+    <!-- ==================== 彈出視窗：動態遮罩與登入Modal ==================== -->
+    <div id="loaderMask" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white font-bold text-sm hidden">
+        <div class="w-10 h-10 border-4 border-t-amber-400 border-white/20 rounded-full animate-spin mb-4"></div>
+        <span id="loaderText">正在連線雲端資料庫，請稍候...</span>
     </div>
 
-    <!-- ==================== 自訂視覺對話框 Modal / Toasts ==================== -->
-    <!-- 1. Custom Toast 通知 -->
+    <!-- 自訂通知 Toast -->
     <div id="customToast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-        <div class="bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-slate-800" id="toastContent">
-            <span>ℹ️</span>
-            <span id="toastMessage">這是自訂通知</span>
+        <div class="bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2" id="toastContent">
+            <span id="toastMessage">通知</span>
         </div>
     </div>
 
-    <!-- 2. Custom Confirm 確認視窗 -->
-    <div id="customConfirmModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl border border-slate-100">
-            <h4 class="font-serif text-base font-bold text-slate-800 mb-2" id="confirmTitle">您確定要執行此操作嗎？</h4>
-            <p class="text-xs text-slate-500 leading-relaxed mb-6" id="confirmMessage">此操作將寫入雲端或進行狀態更改。</p>
-            <div class="flex gap-2">
-                <button id="confirmCancelBtn" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition cursor-pointer">取消</button>
-                <button id="confirmOkBtn" class="w-1/2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition cursor-pointer">確認執行</button>
+    <!-- 學生自訂登入 Modal -->
+    <div id="loginModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-[slideUp_0.3s_ease-out]">
+            <button onclick="closeLoginModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 font-bold text-lg cursor-pointer">✕</button>
+            <div class="text-center mb-6 mt-2">
+                <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner">🎒</div>
+                <h3 class="font-bold text-lg text-slate-800 font-serif">護照旅行者登入</h3>
+                <p class="text-xs text-slate-500 mt-1">請輸入您的班級與姓名建立護照</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 ml-1">所屬班級 <span class="text-slate-400 font-normal">(例: 101, 五甲)</span></label>
+                    <input type="text" id="loginClass" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="請輸入班級">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 ml-1">真實姓名</label>
+                    <input type="text" id="loginName" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="請輸入姓名">
+                </div>
+                <button onclick="performStudentLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-md mt-2 transition text-sm cursor-pointer">啟動閱讀護照</button>
             </div>
         </div>
     </div>
 
-    <!-- ==================== 系統核心程式腳本 ==================== -->
+    <!-- ==================== 核心程式腳本 ==================== -->
     <script>
-        // 核心串接設定：您的 Google Apps Script 網頁應用程式網址
+        // ⚠️ 您專屬的 Google Apps Script API 網址
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwV_8Ssl7Dez00oYTodSNl8N-hDVPewBqqw6PSnDwrn54f-JURlPrFn-Xf7WQUCZmS6iQ/exec";
 
-        // 全域核心狀態快取
         let appState = { logs: [], users: [], tasks: [], announcements: [], classes: [] };
-        let activeUser = { uid: "GUEST", name: "全校訪客", role: "lobby", classId: "" }; // 修改：預設停留在大廳首頁
+        let activeUser = { uid: "GUEST", name: "全校訪客", role: "lobby", classId: "" };
         let chartInstances = { radar: null, lobbyRadar: null };
         let qrScanner = null;
+        let photoBase64Data = ""; 
+        let photoMimeType = "";
 
-        // 主題色設定
         const THEME_MAP = {
             blue: { coverBg: 'bg-[#1e2d42]', border: 'border-[#e5c158]', text: 'text-[#e5c158]' },
             green: { coverBg: 'bg-[#1c352d]', border: 'border-[#d4af37]', text: 'text-[#d4af37]' },
@@ -466,7 +391,6 @@
             purple: { coverBg: 'bg-[#2e1a47]', border: 'border-[#e0b0ff]', text: 'text-[#e0b0ff]' }
         };
 
-        // 書籍分類與視覺印章
         const CATEGORY_MAP = {
             literature: { label: '文學故事', emoji: '🎭', color: 'bg-rose-100 text-rose-800' },
             science: { label: '科普大自然', emoji: '🔬', color: 'bg-cyan-100 text-cyan-800' },
@@ -476,72 +400,88 @@
             fantasy: { label: '奇幻魔法', emoji: '🔮', color: 'bg-indigo-100 text-indigo-800' }
         };
 
-        // 系統掛載
         document.addEventListener("DOMContentLoaded", async function() {
-            document.getElementById("roleSelect").value = activeUser.role; // 新增：確保右上角下拉選單與預設大廳身分同步
+            document.getElementById("roleSelect").value = activeUser.role;
             await syncCloudData();
-
-            // 監聽快捷身份變更
-            document.getElementById("roleSelect").addEventListener("change", function(e) {
-                setRole(e.target.value);
-            });
-
-            // 學生提報表單提交
+            document.getElementById("roleSelect").addEventListener("change", e => setRole(e.target.value));
             document.getElementById("addBookForm").addEventListener("submit", handleStudentFormSubmit);
         });
 
-        // 大廳快捷傳送門切換身份
+        // 大廳切換與登入功能
+        function navigateToLobby() { setRole('lobby'); }
+
         function setRole(roleName) {
             document.getElementById("roleSelect").value = roleName;
             if(roleName === "lobby") {
                 activeUser = { uid: "GUEST", name: "全校訪客", role: "lobby", classId: "" };
-            } else if(roleName === "student") {
-                activeUser = { uid: "S11201", name: "王小明", role: "student", classId: "C01" };
-            } else if(roleName === "teacher") {
-                activeUser = { uid: "T9901", name: "張美玲老師", role: "teacher", classId: "C01" };
-            } else if(roleName === "admin") {
+                switchDashboardView();
+            } else if (roleName === "student_login") {
+                document.getElementById('loginModal').classList.remove('hidden');
+                // 重設回大廳選項，避免選單卡在 student_login
+                document.getElementById("roleSelect").value = 'lobby'; 
+            } else if (roleName === "teacher") {
+                activeUser = { uid: "T9901", name: "張老師", role: "teacher", classId: "101" };
+                switchDashboardView();
+            } else if (roleName === "admin") {
                 activeUser = { uid: "ADMIN", name: "全校系統管理員", role: "admin", classId: "" };
+                switchDashboardView();
             }
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+        }
+
+        function performStudentLogin() {
+            const cls = document.getElementById("loginClass").value.trim();
+            const nm = document.getElementById("loginName").value.trim();
+            if(!cls || !nm) return showCustomToast("請完整填寫班級與姓名", "error");
+            
+            // 組合班級+姓名作為資料庫的 UID 識別
+            activeUser = { uid: `${cls}_${nm}`, name: nm, role: "student", classId: cls };
+            
+            closeLoginModal();
+            showCustomToast(`歡迎回來，${cls} ${nm}！`, "success");
+            
+            // 讓右上角選單顯示為學生入口
+            const roleSelect = document.getElementById("roleSelect");
+            const tempOpt = document.createElement("option");
+            tempOpt.value = "student_temp";
+            tempOpt.text = `🎒 個人護照 (${cls} ${nm})`;
+            roleSelect.add(tempOpt, roleSelect.options[1]);
+            roleSelect.value = "student_temp";
+
             switchDashboardView();
         }
 
-        // 點擊Logo快速返回大廳
-        function navigateToLobby() {
-            setRole('lobby');
-        }
-
-        // 同步 Google Apps Script / Sheets 資料
+        // 同步 API
         async function syncCloudData() {
-            toggleLoader(true);
+            toggleLoader(true, "連線雲端資料庫中...");
             try {
                 const response = await fetch(`${GAS_URL}?action=getInitData`);
                 appState = await response.json();
+                document.getElementById("syncStatusIndicator").innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span><span>雲端連線成功</span>';
+                document.getElementById("syncStatusIndicator").className = "flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold";
                 switchDashboardView();
             } catch (err) {
-                showCustomToast("無法成功同步雲端試算表，請確認您的 GAS 部署與 Google 權限是否正確設為任何人皆可存取。", "error");
+                document.getElementById("syncStatusIndicator").innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>連線異常</span>';
+                document.getElementById("syncStatusIndicator").className = "flex items-center gap-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold";
+                showCustomToast("雲端同步失敗，請確認網路連線。", "error");
             } finally {
                 toggleLoader(false);
             }
         }
 
-        // SPA 視窗中央控制調度
         function switchDashboardView() {
-            // 隱藏全部
             document.querySelectorAll(".view-panel").forEach(p => p.classList.add("hidden"));
-            
-            // 更新狀態顯示列
             document.getElementById("headerUserName").innerText = activeUser.name;
             document.getElementById("headerUserRole").innerText = activeUser.role.toUpperCase();
 
-            // 滾動公告跑馬燈渲染
             if (appState.announcements && appState.announcements.length > 0) {
                 const latest = appState.announcements[appState.announcements.length - 1];
-                document.getElementById("announcementMarquee").innerText = `📢 全校最新公告：[${latest.date}] ${latest.title} — ${latest.content}`;
-            } else {
-                document.getElementById("announcementMarquee").innerText = `📢 最新公告：寒暑假自主悅讀大冒險開跑，歡迎登錄獲得您的國家簽證戳章！`;
+                document.getElementById("announcementMarquee").innerText = `📢 全校公告：[${latest.date}] ${latest.title} — ${latest.content}`;
             }
 
-            // 切換對應控制台
             if (activeUser.role === "lobby") {
                 document.getElementById("viewLobby").classList.remove("hidden");
                 renderLobbyView();
@@ -557,33 +497,20 @@
             }
         }
 
-        // ==================== [ 0. 全校大廳首頁渲染邏輯 ] ====================
+        // ==================== [ 0. 大廳視圖 ] ====================
         function renderLobbyView() {
             const logs = appState.logs || [];
             const certifiedLogs = logs.filter(l => l.status === "已核章");
             const distinctUsers = new Set(logs.map(l => l.uid));
 
-            // 算數據看板
             document.getElementById("lobbyTotalBooks").innerText = certifiedLogs.length;
             document.getElementById("lobbyTotalPages").innerText = certifiedLogs.reduce((sum, l) => sum + (Number(l.pages) || 0), 0);
             document.getElementById("lobbyTotalUsers").innerText = distinctUsers.size;
-            
             const totalRating = certifiedLogs.reduce((sum, l) => sum + (Number(l.rating) || 5), 0);
             document.getElementById("lobbyAvgRating").innerText = certifiedLogs.length > 0 ? (totalRating / certifiedLogs.length).toFixed(1) : "0.0";
 
-            // 渲染班級排行競賽榜
             const classCounts = {};
-            // 對應 classes 名冊進行初始防呆
-            if(appState.classes) {
-                appState.classes.forEach(c => { classCounts[c.className] = 0; });
-            }
-            // 累計各班已核章量
-            certifiedLogs.forEach(l => {
-                const classObj = appState.classes.find(c => c.classId.toString() === l.classId.toString());
-                const className = classObj ? classObj.className : "其他班級";
-                classCounts[className] = (classCounts[className] || 0) + 1;
-            });
-
+            certifiedLogs.forEach(l => { classCounts[l.classId || "其他"] = (classCounts[l.classId || "其他"] || 0) + 1; });
             const lobbyClassList = document.getElementById("lobbyClassList");
             lobbyClassList.innerHTML = "";
             const sortedClasses = Object.entries(classCounts).sort((a,b) => b[1] - a[1]);
@@ -592,11 +519,11 @@
                 lobbyClassList.innerHTML = `<li class="text-slate-400 text-center py-4">目前尚無班級競賽數據</li>`;
             } else {
                 sortedClasses.forEach(([className, count], i) => {
-                    const progress = sortedClasses[0][1] > 0 ? (count / sortedClasses[0][1]) * 100 : 0;
+                    const progress = (count / sortedClasses[0][1]) * 100;
                     lobbyClassList.innerHTML += `
                         <li class="space-y-1">
                             <div class="flex justify-between items-center text-xs">
-                                <span class="font-bold text-slate-700">${i===0?'🏆':i+1+'階.'} ${className}</span>
+                                <span class="font-bold text-slate-700">${i===0?'🏆':i+1+'.'} 班級 ${className}</span>
                                 <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-black">${count} 本</span>
                             </div>
                             <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
@@ -607,154 +534,171 @@
                 });
             }
 
-            // 渲染最新出入境動態實況牆
             const liveStream = document.getElementById("lobbyLiveStream");
             liveStream.innerHTML = "";
             const recentLogs = certifiedLogs.slice().reverse().slice(0, 10);
-
             if(recentLogs.length === 0) {
                 liveStream.innerHTML = `<p class="text-slate-400 text-center py-6">目前暫無通關簽證記錄...</p>`;
             } else {
                 recentLogs.forEach(l => {
                     const cat = CATEGORY_MAP[l.category] || { emoji: "📖", label: "其他" };
                     liveStream.innerHTML += `
-                        <div class="p-2.5 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between text-[11px] panel-animate">
+                        <div class="p-2.5 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between text-[11px] mb-2">
                             <div class="flex items-center gap-2">
                                 <span class="text-lg">${cat.emoji}</span>
-                                <div>
-                                    <p class="text-slate-800 font-bold">${l.studentName} <span class="text-slate-400 font-normal">通過認證</span></p>
-                                    <p class="text-slate-500 truncate max-w-[150px] md:max-w-[180px]">《${l.title}》</p>
-                                </div>
+                                <div><p class="text-slate-800 font-bold">${l.classId} ${l.studentName} <span class="text-slate-400 font-normal">通過認證</span></p><p class="text-slate-500 truncate max-w-[150px]">《${l.title}》</p></div>
                             </div>
-                            <span class="text-[9px] text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md font-bold uppercase tracking-widest">APPROVED</span>
+                            <span class="text-[9px] text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md font-bold uppercase">APPROVED</span>
                         </div>
                     `;
                 });
             }
 
-            // 渲染首頁全校分佈雷達圖
-            buildLobbyRadar(certifiedLogs);
-        }
-
-        // 首頁雷達圖繪製
-        function buildLobbyRadar(certifiedLogs) {
             const counts = { literature: 0, science: 0, history: 0, art: 0, growth: 0, fantasy: 0 };
             certifiedLogs.forEach(l => { if(counts[l.category] !== undefined) counts[l.category]++; });
-
-            const ctx = document.getElementById("lobbyRadarChart").getContext("2d");
             if(chartInstances.lobbyRadar) chartInstances.lobbyRadar.destroy();
-            chartInstances.lobbyRadar = new Chart(ctx, {
+            chartInstances.lobbyRadar = new Chart(document.getElementById("lobbyRadarChart").getContext("2d"), {
                 type: 'radar',
-                data: {
-                    labels: ['文學故事', '科普自然', '歷史社會', '藝術美學', '自我成長', '奇幻魔法'],
-                    datasets: [{
-                        data: Object.values(counts),
-                        backgroundColor: 'rgba(245, 193, 88, 0.2)',
-                        borderColor: '#e5c158',
-                        borderWidth: 2,
-                        pointRadius: 3,
-                        pointBackgroundColor: '#1e2d42'
-                    }]
-                },
-                options: {
-                    plugins: { legend: { display: false } },
-                    scales: { r: { ticks: { display: false } } }
-                }
+                data: { labels: ['文學故事', '科普自然', '歷史社會', '藝術美學', '自我成長', '奇幻魔法'], datasets: [{ data: Object.values(counts), backgroundColor: 'rgba(245, 193, 88, 0.2)', borderColor: '#e5c158', borderWidth: 2 }] },
+                options: { plugins: { legend: { display: false } }, scales: { r: { ticks: { display: false } } } }
             });
         }
 
-        // ==================== [ 1. 學生端主介面渲染邏輯 ] ====================
+        // ==================== [ 1. 學生端視圖與照片上傳機制 ] ====================
         function renderStudentView() {
-            const myLogs = appState.logs.filter(l => l.uid.toString() === activeUser.uid.toString());
-            const profile = appState.users.find(u => u.uid.toString() === activeUser.uid.toString()) || { level: 1, exp: 0 };
+            const myLogs = appState.logs.filter(l => l.uid === activeUser.uid);
+            const profile = appState.users.find(u => u.uid === activeUser.uid) || { level: 1, exp: 0 };
             
-            // 計算各項指標
+            document.getElementById("stuPassportTitle").innerText = `${activeUser.name} 的閱讀護照`;
+            document.getElementById("stuClassTag").innerText = `班級：${activeUser.classId}`;
+            document.getElementById("stuLevelTitle").innerText = `等級 ${profile.level} · 智慧旅行家 (${profile.exp} EXP)`;
+            
             const approvedCount = myLogs.filter(l => l.status === "已核章").length;
             const totalPages = myLogs.reduce((sum, l) => sum + (Number(l.pages) || 0), 0);
             
-            document.getElementById("stuPassportTitle").innerText = `${activeUser.name}的閱讀護照`;
-            document.getElementById("stuLevelTitle").innerText = `等級 ${profile.level} · 智慧旅行家 (${profile.exp} EXP)`;
             document.getElementById("statBooks").innerText = `${myLogs.length} 本`;
             document.getElementById("statPages").innerText = `${totalPages} 頁`;
             document.getElementById("statApproved").innerText = `${myLogs.length > 0 ? Math.round((approvedCount/myLogs.length)*100) : 0}%`;
 
-            // 渲染閱讀日誌流水帳
+            // 渲染日誌
             const container = document.getElementById("studentLogContainer");
-            container.innerHTML = myLogs.length === 0 ? `<p class="text-xs text-slate-400 text-center py-6">目前尚未有任何閱讀冒險足跡，請使用上方表單新增！</p>` : "";
+            container.innerHTML = myLogs.length === 0 ? `<p class="text-xs text-slate-400 text-center py-6">目前尚未有紀錄，請新增！</p>` : "";
             
             myLogs.slice().reverse().forEach(l => {
+                const cat = CATEGORY_MAP[l.category] || CATEGORY_MAP.literature;
+                // 判斷是否為照片連結
+                let reviewContent = l.photoUrl && l.photoUrl.startsWith("http")
+                    ? `<a href="${l.photoUrl}" target="_blank" class="inline-flex items-center gap-1 text-indigo-600 font-bold bg-indigo-50 px-2.5 py-1.5 rounded-lg border border-indigo-100 hover:bg-indigo-100 transition mt-2">📸 點此查看已上傳之實體相片</a>`
+                    : `<p class="text-slate-600 font-serif italic mt-2 leading-relaxed">「${l.review}」</p>`;
+
                 container.innerHTML += `
-                    <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex justify-between items-center text-xs panel-animate relative overflow-hidden">
-                        <div>
-                            <span class="px-2 py-0.5 rounded-full font-bold text-[10px] ${CATEGORY_MAP[l.category]?.color || 'bg-gray-100'}">${CATEGORY_MAP[l.category]?.emoji} ${CATEGORY_MAP[l.category]?.label}</span>
+                    <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl flex justify-between items-start text-xs mb-3">
+                        <div class="w-full pr-4">
+                            <span class="px-2 py-0.5 rounded-full font-bold text-[10px] ${cat.color}">${cat.emoji} ${cat.label}</span>
                             <h5 class="font-bold text-slate-800 text-sm mt-2">${l.title} <span class="text-xs text-slate-400 font-normal">/ ${l.author}</span></h5>
-                            <p class="text-slate-600 font-serif italic mt-1 leading-relaxed">「${l.review}」</p>
-                            <p class="text-[10px] text-slate-400 mt-2">規格頁數: ${l.pages} 頁 | 上傳時間: ${l.date}</p>
+                            ${reviewContent}
+                            <p class="text-[10px] text-slate-400 mt-2">規格頁數: ${l.pages} 頁 | 日期: ${l.date}</p>
                         </div>
-                        <div class="text-right pl-4">
-                            ${l.status === '已核章' 
-                                ? `<div class="stamp-seal text-[10px] text-emerald-600 border-2 border-emerald-600 border-dashed rounded-lg px-2 py-1 font-bold">APPROVED<br><span class="text-[8px]">${l.teacherSignDate || ''}</span></div>` 
-                                : `<span class="px-2.5 py-1 rounded-md font-bold text-[10px] bg-amber-100 text-amber-800">${l.status}</span>`}
+                        <div class="shrink-0 flex flex-col items-center pt-1">
+                            ${l.status === '已核章' ? `<div class="stamp-seal text-[10px] text-emerald-600 border-2 border-emerald-600 border-dashed rounded-lg px-2 py-1 font-bold shadow-sm bg-emerald-50/50">APPROVED</div>` : `<span class="px-2 py-1 rounded font-bold text-[10px] bg-amber-100 text-amber-800">${l.status}</span>`}
                         </div>
                     </div>
                 `;
             });
 
-            // 學生端班級榜生成
-            const classLeaderboard = document.getElementById("classRankList");
-            classLeaderboard.innerHTML = "";
-            const counts = {};
-            appState.logs.forEach(l => { counts[l.studentName] = (counts[l.studentName] || 0) + 1; });
-            const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 3);
-            if(sorted.length === 0) {
-                classLeaderboard.innerHTML = `<li class="text-xs text-slate-400">目前暫無數據</li>`;
+            // 班級任務
+            const tasksList = document.getElementById("studentTasksList");
+            tasksList.innerHTML = "";
+            const myTasks = appState.tasks.filter(t => t.classId.toString() === activeUser.classId.toString());
+            if (myTasks.length === 0) tasksList.innerHTML = `<p class="text-slate-400 py-2 text-center text-xs">目前班級無指派任務</p>`;
+            else myTasks.forEach(t => {
+                const completed = myLogs.some(l => l.title.includes(t.targetBook) && l.status === "已核章");
+                tasksList.innerHTML += `
+                    <div class="p-2.5 rounded-xl border ${completed ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100'} flex items-center justify-between mb-2">
+                        <div><p class="font-bold text-slate-800">${t.taskTitle}</p><p class="text-[10px] text-slate-500">《${t.targetBook}》</p></div>
+                        <span class="px-2 py-0.5 rounded-full font-bold text-[9px] ${completed ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">${completed ? '已達成 🏅' : '未完成'}</span>
+                    </div>
+                `;
+            });
+
+            // 圖表
+            const counts = { literature: 0, science: 0, history: 0, art: 0, growth: 0, fantasy: 0 };
+            myLogs.forEach(l => { if(counts[l.category] !== undefined) counts[l.category]++; });
+            if(chartInstances.radar) chartInstances.radar.destroy();
+            chartInstances.radar = new Chart(document.getElementById("chartRadar").getContext("2d"), {
+                type: 'radar',
+                data: { labels: ['文學故事', '科普自然', '歷史社會', '藝術美學', '自我成長', '奇幻魔法'], datasets: [{ data: Object.values(counts), backgroundColor: 'rgba(79, 70, 229, 0.15)', borderColor: 'rgba(79, 70, 229, 1)', borderWidth: 1.5 }] },
+                options: { plugins: { legend: { display: false } }, scales: { r: { ticks: { display: false } } } }
+            });
+            
+            // 徽章
+            const badges = document.getElementById("studentBadgesGrid");
+            badges.innerHTML = "";
+            [{ n: "起步", i: "🚀", active: myLogs.length >= 1 }, { n: "科學家", i: "🔬", active: myLogs.length >= 3 }, { n: "大王", i: "⚓", active: totalPages >= 1000 }, { n: "傳奇", i: "👑", active: myLogs.length >= 10 }].forEach(b => {
+                badges.innerHTML += `<div class="flex flex-col items-center ${b.active ? 'opacity-100' : 'opacity-25'}"><span class="text-2xl">${b.i}</span><p class="text-[10px] font-bold mt-1">${b.n}</p></div>`;
+            });
+            
+            // 榜單
+            const classRanks = document.getElementById("classRankList");
+            classRanks.innerHTML = "";
+            const ranks = {};
+            appState.logs.filter(l => l.classId === activeUser.classId).forEach(l => ranks[l.studentName] = (ranks[l.studentName] || 0) + 1);
+            Object.entries(ranks).sort((a,b)=>b[1]-a[1]).slice(0,3).forEach(([nm, c], idx) => {
+                classRanks.innerHTML += `<li class="flex justify-between bg-slate-50 p-2 rounded-xl text-xs"><span class="font-bold">第 ${idx+1} 名 - ${nm}</span><span class="bg-indigo-100 text-indigo-700 px-2 rounded-full font-bold">${c} 本</span></li>`;
+            });
+        }
+
+        // 切換文字與照片上傳的 UI
+        function toggleReviewUI() {
+            const isPhoto = document.querySelector('input[name="reviewType"]:checked').value === "photo";
+            document.getElementById("textReviewSection").classList.toggle("hidden", isPhoto);
+            document.getElementById("photoReviewSection").classList.toggle("hidden", !isPhoto);
+            
+            if (!isPhoto) {
+                document.getElementById('fReviewText').setAttribute('required', 'required');
             } else {
-                sorted.forEach(([name, count], index) => {
-                    const icons = ["🥇", "🥈", "🥉"];
-                    classLeaderboard.innerHTML += `
-                        <li class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl text-xs">
-                            <span class="font-bold text-slate-700">${icons[index]} 第 ${index+1} 名 - ${name}</span>
-                            <span class="bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">${count} 本</span>
-                        </li>
-                    `;
-                });
+                document.getElementById('fReviewText').removeAttribute('required');
             }
-
-            // 渲染個人解鎖徽章
-            renderStudentBadges(myLogs.length, totalPages);
-
-            // 更新個人雷達圖
-            buildStudentRadar(myLogs);
         }
 
-        // 渲染個人徽章牆
-        function renderStudentBadges(bookCount, pageCount) {
-            const grid = document.getElementById("studentBadgesGrid");
-            grid.innerHTML = "";
-            const rules = [
-                { name: "起步走", icon: "🚀", active: bookCount >= 1, desc: "完成 1 本閱讀" },
-                { name: "科學粉", icon: "🔬", active: bookCount >= 3, desc: "完成 3 本閱讀" },
-                { name: "大船入港", icon: "⚓", active: pageCount >= 1000, desc: "總頁數達 1000" },
-                { name: "博學傳奇", icon: "👑", active: bookCount >= 10, desc: "完成 10 本閱讀" }
-            ];
-            let unlocked = 0;
-            rules.forEach(b => {
-                if(b.active) unlocked++;
-                grid.innerHTML += `
-                    <div class="flex flex-col items-center ${b.active ? 'opacity-100' : 'opacity-25'}">
-                        <span class="text-2xl">${b.icon}</span>
-                        <p class="text-[10px] font-bold mt-1 text-slate-700">${b.name}</p>
-                        <p class="text-[8px] text-slate-400 scale-90 whitespace-nowrap">${b.desc}</p>
-                    </div>
-                `;
-            });
-            document.getElementById("badgeUnlockCount").innerText = `${unlocked}/${rules.length}`;
+        // 使用 Canvas 壓縮圖片轉 Base64
+        function previewPhoto(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    const MAX_WIDTH = 800; // 壓縮限制，加快上傳
+                    if (w > MAX_WIDTH) { h *= MAX_WIDTH / w; w = MAX_WIDTH; }
+                    canvas.width = w; canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    
+                    photoBase64Data = canvas.toDataURL('image/jpeg', 0.75); // 壓縮為 JPEG 75%
+                    photoMimeType = 'image/jpeg';
+                    
+                    const preview = document.getElementById('photoPreview');
+                    preview.src = photoBase64Data;
+                    preview.classList.remove('hidden');
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
         }
 
-        // 學生提交閱讀紀錄表單 (CORS 優化配置)
         async function handleStudentFormSubmit(e) {
             e.preventDefault();
-            toggleLoader(true);
+            const isPhoto = document.querySelector('input[name="reviewType"]:checked').value === "photo";
+            
+            if(isPhoto && !photoBase64Data) {
+                return showCustomToast("請選擇照片檔案上傳！", "error");
+            }
+            
+            toggleLoader(true, "紀錄與照片上傳雲端中，請耐心等候...");
+            
             const data = {
                 action: "addLog",
                 uid: activeUser.uid,
@@ -764,11 +708,13 @@
                 author: document.getElementById("fAuthor").value || "未提供",
                 category: document.getElementById("fCategory").value,
                 pages: document.getElementById("fPages").value,
-                review: document.getElementById("fReview").value
+                rating: document.getElementById("fRating").value,
+                review: isPhoto ? "已透過紙本拍照上傳" : document.getElementById("fReviewText").value,
+                photoBase64: isPhoto ? photoBase64Data : "",
+                mimeType: photoMimeType
             };
 
             try {
-                // 優化：採用 text/plain Content-Type 安全穿透 CORS preflight 限制
                 const res = await fetch(GAS_URL, { 
                     method: "POST", 
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -776,274 +722,145 @@
                 });
                 const json = await res.json();
                 if(json.status === "success") {
-                    showCustomToast("🛫 成功提報閱讀紀錄！經驗值加 50 EXP！已送入導師審核庫。", "success");
+                    showCustomToast("🛫 提報成功！已送入教師審核庫。", "success");
                     document.getElementById("addBookForm").reset();
+                    photoBase64Data = "";
+                    document.getElementById('photoPreview').classList.add('hidden');
+                    document.getElementById("textReviewSection").classList.remove("hidden");
+                    document.getElementById("photoReviewSection").classList.add("hidden");
                     await syncCloudData();
                 }
-            } catch(e) {
-                showCustomToast("提報寫入失敗，請確認網路與試算表欄位設定", "error");
+            } catch(err) {
+                showCustomToast("上傳失敗，檔案過大或網路異常", "error");
             } finally {
                 toggleLoader(false);
             }
         }
 
-        // 學生個人雷達圖
-        function buildStudentRadar(myLogs) {
-            const counts = { literature: 0, science: 0, history: 0, art: 0, growth: 0, fantasy: 0 };
-            myLogs.forEach(l => { if(counts[l.category] !== undefined) counts[l.category]++; });
-
-            const ctx = document.getElementById("chartRadar").getContext("2d");
-            if(chartInstances.radar) chartInstances.radar.destroy();
-            chartInstances.radar = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: ['文學故事', '科普自然', '歷史社會', '藝術美學', '自我成長', '奇幻魔法'],
-                    datasets: [{
-                        label: '冒險次數',
-                        data: Object.values(counts),
-                        backgroundColor: 'rgba(79, 70, 229, 0.15)',
-                        borderColor: 'rgba(79, 70, 229, 1)',
-                        borderWidth: 1.5,
-                        pointRadius: 2
-                    }]
-                },
-                options: {
-                    plugins: { legend: { display: false } },
-                    scales: { r: { ticks: { display: false } } }
-                }
-            });
-        }
-
-        // ==================== [ 2. 教師指導端渲染邏輯 ] ====================
+        // ==================== [ 2. 教師端視圖 ] ====================
         function renderTeacherView() {
             const tbody = document.getElementById("reviewTableBody");
             tbody.innerHTML = "";
             const pendings = appState.logs.filter(l => l.status === "待審核");
 
             if (pendings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">🎉 全班表現優良，目前所有閱讀紀錄皆已審核認證完畢！</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">🎉 目前無待審核紀錄</td></tr>`;
                 return;
             }
 
             pendings.forEach(l => {
-                const tr = document.createElement("tr");
-                tr.className = "border-b border-slate-100 text-xs hover:bg-slate-50";
-                tr.innerHTML = `
-                    <td class="p-3 font-bold text-indigo-900">${l.studentName}</td>
-                    <td class="p-3"><b>${l.title}</b><br><span class="text-slate-400">${l.author} (${l.pages} 頁)</span></td>
-                    <td class="p-3 font-serif italic text-slate-600 max-w-xs leading-relaxed">「${l.review}」</td>
-                    <td class="p-3 text-center space-x-1 whitespace-nowrap">
-                        <button onclick="executeReview('${l.id}', '已核章')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-xl font-bold cursor-pointer transition">通過認證</button>
-                        <button onclick="executeReview('${l.id}', '不通過')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded-xl font-bold cursor-pointer transition">退回</button>
-                    </td>
+                let reviewCell = l.photoUrl && l.photoUrl.startsWith("http")
+                    ? `<a href="${l.photoUrl}" target="_blank" class="text-indigo-600 font-bold underline bg-indigo-50 px-2 py-1 rounded inline-block">📸 點此開啟審核圖片</a>`
+                    : `<span class="italic text-slate-600 font-serif leading-relaxed line-clamp-2">「${l.review}」</span>`;
+
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50">
+                        <td class="p-3"><b>${l.classId}</b><br><span class="text-indigo-800 font-bold">${l.studentName}</span></td>
+                        <td class="p-3 font-bold">${l.title} <span class="block text-slate-400 font-normal">${l.pages} 頁</span></td>
+                        <td class="p-3 text-xs max-w-xs">${reviewCell}</td>
+                        <td class="p-3 text-center space-x-1 whitespace-nowrap">
+                            <button onclick="executeReview('${l.id}', '已核章')" class="bg-emerald-600 text-white px-2 py-1.5 rounded-lg font-bold">核准</button>
+                            <button onclick="executeReview('${l.id}', '不通過')" class="bg-rose-600 text-white px-2 py-1.5 rounded-lg font-bold">退回</button>
+                        </td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
             });
         }
 
-        // 審核提報心得 (CORS 優化配置)
-        function executeReview(logId, status) {
-            showCustomConfirm(
-                "簽章認證確認",
-                `您確定要將此項閱讀提報的心得狀態標記為 [${status}] 嗎？此動作將立即同步變更 Google 雲端資料庫。`,
-                async () => {
-                    toggleLoader(true);
-                    try {
-                        const res = await fetch(GAS_URL, {
-                            method: "POST",
-                            headers: { "Content-Type": "text/plain;charset=utf-8" },
-                            body: JSON.stringify({ action: "reviewLog", logId: logId, status: status })
-                        });
-                        const data = await res.json();
-                        if(data.status === "success") {
-                            showCustomToast(`審核完成！狀態已設定為: ${status}`, "success");
-                            await syncCloudData();
-                        }
-                    } catch(e) {
-                        showCustomToast("審查設定寫入失敗，請確認與試算表的雲端通訊。", "error");
-                    } finally {
-                        toggleLoader(false);
-                    }
-                }
-            );
-        }
-
-        // 班導師派發任務 (CORS 優化配置)
-        async function handleTeacherTaskSubmit() {
-            const title = document.getElementById("taskTitleInput").value;
-            const book = document.getElementById("taskBookInput").value;
-            if(!title || !book) return showCustomToast("請填寫完整的指派任務資訊", "error");
-
-            toggleLoader(true);
+        async function executeReview(logId, status) {
+            toggleLoader(true, "審核寫入中...");
             try {
                 await fetch(GAS_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ action: "addTask", classId: "C01", taskTitle: title, targetBook: book, dueDate: "2026-08-31" })
+                    body: JSON.stringify({ action: "reviewLog", logId: logId, status: status })
                 });
-                showCustomToast("🎯 班級指定任務指派成功！已同步至雲端資料庫。", "success");
-                document.getElementById("taskTitleInput").value = "";
-                document.getElementById("taskBookInput").value = "";
+                showCustomToast(`已完成審核: ${status}`, "success");
                 await syncCloudData();
             } catch(e) {
-                showCustomToast("任務指派發布失敗", "error");
+                showCustomToast("審查寫入失敗", "error");
             } finally {
                 toggleLoader(false);
             }
         }
 
-        // 班級 Excel 導出
-        function triggerCsvExport() {
-            let csv = "data:text/csv;charset=utf-8,\uFEFF流水號,提報人,書籍名稱,總頁數,心得感想,認證狀態\n";
-            appState.logs.forEach(l => {
-                csv += `${l.id},${l.studentName},${l.title},${l.pages},${l.review.replace(/\n/g, ' ')},${l.status}\n`;
-            });
-            const link = document.createElement("a");
-            link.href = encodeURI(csv);
-            link.download = `全班閱讀護照數據表_${new Date().toISOString().split('T')[0]}.csv`;
-            link.click();
-        }
-
-        // ==================== [ 3. 全校管理者端渲染邏輯 ] ====================
-        function renderAdminView() {
-            document.getElementById("admTotalUsers").innerText = `${appState.users ? appState.users.length : 0} 人`;
-            document.getElementById("admTotalLogs").innerText = `${appState.logs ? appState.logs.length : 0} 筆`;
-            document.getElementById("admTotalAnns").innerText = `${appState.announcements ? appState.announcements.length : 0} 則`;
-            if (GAS_URL) {
-                document.getElementById("dbLinkBtn").href = GAS_URL.split("/exec")[0];
-            }
-        }
-
-        // 管理員發布公告 (CORS 優化配置)
-        async function postAdminAnnounce(e) {
-            e.preventDefault();
-            const t = document.getElementById("admAnnTitle").value;
-            const c = document.getElementById("admAnnContent").value;
-            if(!t || !c) return;
-
+        async function handleTeacherTaskSubmit() {
+            const t = document.getElementById("taskTitleInput").value;
+            const b = document.getElementById("taskBookInput").value;
+            if(!t || !b) return;
             toggleLoader(true);
             try {
-                await fetch(GAS_URL, { 
-                    method: "POST", 
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ action: "addAnnouncement", title: t, content: c }) 
-                });
-                showCustomToast("📣 全校公告廣播發布成功！跑馬燈已即時更新。", "success");
+                await fetch(GAS_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "addTask", classId: "C01", taskTitle: t, targetBook: b, dueDate: "2026-08-31" }) });
+                showCustomToast("任務指派成功！", "success");
+                await syncCloudData();
+            } catch(e) {} finally { toggleLoader(false); }
+        }
+
+        // ==================== [ 3. 管理者端視圖 ] ====================
+        function renderAdminView() {
+            document.getElementById("admTotalUsers").innerText = appState.users.length;
+            document.getElementById("admTotalLogs").innerText = appState.logs.length;
+            document.getElementById("admTotalAnns").innerText = appState.announcements.length;
+            if (GAS_URL) document.getElementById("dbLinkBtn").href = GAS_URL.split("/exec")[0];
+        }
+
+        async function postAdminAnnounce(e) {
+            e.preventDefault();
+            toggleLoader(true);
+            try {
+                await fetch(GAS_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "addAnnouncement", title: document.getElementById("admAnnTitle").value, content: document.getElementById("admAnnContent").value }) });
+                showCustomToast("公告發布成功", "success");
                 document.getElementById("admAnnForm").reset();
                 await syncCloudData();
-            } catch(e) {
-                showCustomToast("公告廣播發布失敗", "error");
-            } finally {
-                toggleLoader(false);
-            }
+            } catch(e) {} finally { toggleLoader(false); }
         }
 
-        // ==================== [ ISBN 掃描器與模擬降級 ] ====================
+        function triggerCsvExport() {
+            let csv = "data:text/csv;charset=utf-8,\uFEFF流水號,提報人,書籍名稱,總頁數,心得感想,認證狀態\n";
+            appState.logs.forEach(l => csv += `${l.id},${l.studentName},${l.title},${l.pages},${l.review.replace(/\n/g, ' ')},${l.status}\n`);
+            const a = document.createElement("a"); a.href = encodeURI(csv); a.download = `報表.csv`; a.click();
+        }
+
         function triggerIsbnCamera() {
-            const container = document.getElementById("cameraBox");
-            container.classList.remove("hidden");
+            document.getElementById("cameraBox").classList.remove("hidden");
             qrScanner = new Html5Qrcode("scannerView");
-            qrScanner.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 250, height: 160 } },
-                (code) => {
-                    stopIsbnCamera();
-                    showCustomToast(`成功掃描 ISBN: ${code}！系統已自動完成書目帶入！`, "success");
-                    document.getElementById("fTitle").value = "世界地理大探險 (自動帶入)";
-                    document.getElementById("fAuthor").value = "強納生·霍格";
-                    document.getElementById("fPages").value = 210;
-                },
-                () => {}
-            ).catch(() => {
-                showCustomToast("相機啟用授權未通過。系統已自動開啟模擬自動填寫測試！", "error");
-                container.classList.add("hidden");
-                // 模擬自動帶入
-                setTimeout(() => {
-                    document.getElementById("fTitle").value = "世界地理大探險 (自動模擬)";
-                    document.getElementById("fAuthor").value = "強納生·霍格";
-                    document.getElementById("fPages").value = 210;
-                    showCustomToast("模擬書目代入完成，您可以直接編輯提交！", "success");
-                }, 800);
+            qrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (code) => {
+                stopIsbnCamera();
+                document.getElementById("fTitle").value = "世界地理大探險 (自動)";
+                document.getElementById("fPages").value = 210;
+                showCustomToast(`成功掃描 ISBN: ${code}！`, "success");
+            }, () => {}).catch(() => {
+                showCustomToast("相機啟動失敗，已切換模擬模式", "error");
+                stopIsbnCamera();
             });
         }
+        function stopIsbnCamera() { if(qrScanner) qrScanner.stop().then(() => document.getElementById("cameraBox").classList.add("hidden")); }
 
-        function stopIsbnCamera() {
-            if(qrScanner) {
-                qrScanner.stop().then(() => {
-                    document.getElementById("cameraBox").classList.add("hidden");
-                });
-            }
-        }
-
-        // ==================== [ 系統自訂 UI 工具模組 ] ====================
-        function toggleLoader(show) {
+        function toggleLoader(show, text="處理中...") {
+            document.getElementById("loaderText").innerText = text;
             document.getElementById("loaderMask").classList.toggle("hidden", !show);
         }
 
-        // 切換精美系統護照外殼主題
-        function changeSystemTheme(themeKey) {
-            const theme = THEME_MAP[themeKey];
-            if (!theme) return;
-            
-            const header = document.getElementById("mainHeader");
-            const card = document.getElementById("passportCoverCard");
-            
-            header.style.backgroundColor = themeKey === 'blue' ? '#1e2d42' : themeKey === 'green' ? '#1c352d' : themeKey === 'burgundy' ? '#4a1525' : '#2e1a47';
-            header.style.color = themeKey === 'blue' ? '#e5c158' : themeKey === 'green' ? '#d4af37' : themeKey === 'burgundy' ? '#f3cd78' : '#e0b0ff';
-            
-            if (card) {
-                card.className = `${theme.coverBg} ${theme.text} rounded-3xl p-6 shadow-xl border-4 ${theme.border} relative overflow-hidden transition-all duration-500`;
-            }
-            showCustomToast(`已將系統視覺包裝與護照外殼切換！`, "success");
-        }
-
-        // 自訂非同步 Toast 提示
-        function showCustomToast(message, type = "success") {
+        function showCustomToast(msg, type="success") {
             const toast = document.getElementById("customToast");
-            const msgSpan = document.getElementById("toastMessage");
-            const content = document.getElementById("toastContent");
-
-            msgSpan.innerText = message;
-            if (type === "error") {
-                content.className = "bg-rose-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-rose-800";
-            } else {
-                content.className = "bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-slate-800";
-            }
-
-            toast.classList.remove("translate-y-20", "opacity-0");
-            toast.classList.add("translate-y-0", "opacity-100");
-
-            setTimeout(() => {
-                toast.classList.remove("translate-y-0", "opacity-100");
-                toast.classList.add("translate-y-20", "opacity-0");
-            }, 3500);
+            document.getElementById("toastMessage").innerText = msg;
+            document.getElementById("toastContent").className = type === "error" 
+                ? "bg-rose-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2" 
+                : "bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2";
+            toast.classList.replace("translate-y-20", "translate-y-0");
+            toast.classList.replace("opacity-0", "opacity-100");
+            setTimeout(() => { toast.classList.replace("translate-y-0", "translate-y-20"); toast.classList.replace("opacity-100", "opacity-0"); }, 3000);
         }
 
-        // 自訂 Modal 雙重確認視窗
-        function showCustomConfirm(title, message, onConfirm) {
-            const modal = document.getElementById("customConfirmModal");
-            document.getElementById("confirmTitle").innerText = title;
-            document.getElementById("confirmMessage").innerText = message;
-            
-            modal.classList.remove("hidden");
-
-            const cancelBtn = document.getElementById("confirmCancelBtn");
-            const okBtn = document.getElementById("confirmOkBtn");
-
-            const cleanListeners = () => {
-                cancelBtn.onclick = null;
-                okBtn.onclick = null;
-                modal.classList.add("hidden");
-            };
-
-            cancelBtn.onclick = () => {
-                cleanListeners();
-            };
-
-            okBtn.onclick = () => {
-                onConfirm();
-                cleanListeners();
-            };
+        function changeSystemTheme(key) {
+            const t = THEME_MAP[key];
+            if(!t) return;
+            const h = document.getElementById("mainHeader");
+            h.style.backgroundColor = key === 'blue' ? '#1e2d42' : key === 'green' ? '#1c352d' : key === 'burgundy' ? '#4a1525' : '#2e1a47';
+            h.style.color = key === 'blue' ? '#e5c158' : key === 'green' ? '#d4af37' : key === 'burgundy' ? '#f3cd78' : '#e0b0ff';
+            const card = document.getElementById("passportCoverCard");
+            if(card) card.className = `${t.coverBg} ${t.text} rounded-3xl p-6 shadow-xl border-4 ${t.border} relative overflow-hidden transition-all duration-500`;
+            showCustomToast("已切換護照外殼主題配色！");
         }
     </script>
 </body>
