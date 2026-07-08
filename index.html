@@ -356,18 +356,71 @@
             <div class="text-center mb-6 mt-2">
                 <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner">🎒</div>
                 <h3 class="font-bold text-lg text-slate-800 font-serif">護照旅行者登入</h3>
-                <p class="text-xs text-slate-500 mt-1">請輸入您的班級與姓名建立護照</p>
+                <p class="text-xs text-slate-500 mt-1">請選擇您的班級並輸入真實姓名</p>
             </div>
             <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5 ml-1">所屬班級 <span class="text-slate-400 font-normal">(例: 101, 五甲)</span></label>
-                    <input type="text" id="loginClass" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="請輸入班級">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1.5 ml-1">就讀年級</label>
+                        <select id="loginGrade" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+                            <option value="1">一年級</option>
+                            <option value="2">二年級</option>
+                            <option value="3">三年級</option>
+                            <option value="4">四年級</option>
+                            <option value="5">五年級</option>
+                            <option value="6">六年級</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1.5 ml-1">就讀班級</label>
+                        <select id="loginClassNum" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+                            <!-- JS 動態填入 1~8 班 -->
+                        </select>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5 ml-1">真實姓名</label>
                     <input type="text" id="loginName" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="請輸入姓名">
                 </div>
                 <button onclick="performStudentLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-md mt-2 transition text-sm cursor-pointer">啟動閱讀護照</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 教師專屬登入 Modal -->
+    <div id="teacherLoginModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-[slideUp_0.3s_ease-out] border-t-8 border-rose-600">
+            <button onclick="document.getElementById('teacherLoginModal').classList.add('hidden'); setRole('lobby');" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 font-bold text-lg cursor-pointer">✕</button>
+            <div class="text-center mb-6 mt-2">
+                <div class="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner">🧑‍🏫</div>
+                <h3 class="font-bold text-lg text-slate-800 font-serif">教師指導管理中心</h3>
+                <p class="text-xs text-rose-600 mt-1 font-bold">請選擇指導班級並輸入安全密碼</p>
+            </div>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1.5 ml-1">指導年級</label>
+                        <select id="teacherLoginGrade" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none cursor-pointer">
+                            <option value="1">一年級</option>
+                            <option value="2">二年級</option>
+                            <option value="3">三年級</option>
+                            <option value="4">四年級</option>
+                            <option value="5">五年級</option>
+                            <option value="6">六年級</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1.5 ml-1">指導班級</label>
+                        <select id="teacherLoginClassNum" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none cursor-pointer">
+                            <!-- JS 動態填入 1~8 班 -->
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 ml-1">系統通行密碼</label>
+                    <input type="password" id="teacherLoginPwd" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none tracking-widest" placeholder="請輸入密碼">
+                </div>
+                <button onclick="performTeacherLogin()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3.5 rounded-xl shadow-md mt-2 transition text-sm cursor-pointer">登入審核中心</button>
             </div>
         </div>
     </div>
@@ -401,6 +454,19 @@
         };
 
         document.addEventListener("DOMContentLoaded", async function() {
+            // 初始化動態生成 1~8 班下拉選單
+            const populateClasses = (selectId) => {
+                const select = document.getElementById(selectId);
+                for(let i=1; i<=8; i++) {
+                    let opt = document.createElement('option');
+                    opt.value = i;
+                    opt.innerHTML = `${i} 班`;
+                    select.appendChild(opt);
+                }
+            };
+            populateClasses('loginClassNum');
+            populateClasses('teacherLoginClassNum');
+
             document.getElementById("roleSelect").value = activeUser.role;
             await syncCloudData();
             document.getElementById("roleSelect").addEventListener("change", e => setRole(e.target.value));
@@ -420,8 +486,8 @@
                 // 重設回大廳選項，避免選單卡在 student_login
                 document.getElementById("roleSelect").value = 'lobby'; 
             } else if (roleName === "teacher") {
-                activeUser = { uid: "T9901", name: "張老師", role: "teacher", classId: "101" };
-                switchDashboardView();
+                document.getElementById('teacherLoginModal').classList.remove('hidden');
+                document.getElementById("roleSelect").value = 'lobby'; // 預防取消登入卡住
             } else if (roleName === "admin") {
                 activeUser = { uid: "ADMIN", name: "全校系統管理員", role: "admin", classId: "" };
                 switchDashboardView();
@@ -430,24 +496,63 @@
 
         function closeLoginModal() {
             document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById("roleSelect").value = 'lobby';
+        }
+
+        // 教師專屬登入驗證
+        function performTeacherLogin() {
+            const pwd = document.getElementById("teacherLoginPwd").value;
+            const g = document.getElementById("teacherLoginGrade").value;
+            const c = document.getElementById("teacherLoginClassNum").value;
+            
+            // 組合班級名稱，例如 101, 508
+            const clsName = `${g}0${c}`;
+            
+            // 安全密碼驗證
+            if (pwd !== "S2860885") {
+                return showCustomToast("密碼錯誤，請重新輸入", "error");
+            }
+            
+            // 登入成功，設定使用者狀態為指定班級的導師
+            activeUser = { uid: "T_" + clsName, name: clsName + " 指導教師", role: "teacher", classId: clsName };
+            
+            document.getElementById('teacherLoginModal').classList.add('hidden');
+            document.getElementById('teacherLoginPwd').value = ""; // 清空密碼欄
+            
+            showCustomToast(`登入成功！歡迎進入 ${clsName} 班 審核控台`, "success");
+            
+            // 更新右上角下拉選單顯示
+            const roleSelect = document.getElementById("roleSelect");
+            const tempOpt = document.createElement("option");
+            tempOpt.value = "teacher_temp";
+            tempOpt.text = `🧑‍🏫 ${clsName} 管理中心`;
+            roleSelect.add(tempOpt, roleSelect.options[2]);
+            roleSelect.value = "teacher_temp";
+
+            switchDashboardView();
         }
 
         function performStudentLogin() {
-            const cls = document.getElementById("loginClass").value.trim();
+            const g = document.getElementById("loginGrade").value;
+            const c = document.getElementById("loginClassNum").value;
             const nm = document.getElementById("loginName").value.trim();
-            if(!cls || !nm) return showCustomToast("請完整填寫班級與姓名", "error");
             
+            if(!nm) return showCustomToast("請務必填寫您的真實姓名", "error");
+            
+            // 組合班級名稱，例如 101, 508
+            const clsName = `${g}0${c}`;
+
             // 組合班級+姓名作為資料庫的 UID 識別
-            activeUser = { uid: `${cls}_${nm}`, name: nm, role: "student", classId: cls };
+            activeUser = { uid: `${clsName}_${nm}`, name: nm, role: "student", classId: clsName };
             
             closeLoginModal();
-            showCustomToast(`歡迎回來，${cls} ${nm}！`, "success");
+            showCustomToast(`歡迎回來，${clsName} 班 ${nm}！`, "success");
             
             // 讓右上角選單顯示為學生入口
             const roleSelect = document.getElementById("roleSelect");
             const tempOpt = document.createElement("option");
             tempOpt.value = "student_temp";
-            tempOpt.text = `🎒 個人護照 (${cls} ${nm})`;
+            tempOpt.text = `🎒 個人護照 (${clsName} ${nm})`;
             roleSelect.add(tempOpt, roleSelect.options[1]);
             roleSelect.value = "student_temp";
 
@@ -739,12 +844,18 @@
 
         // ==================== [ 2. 教師端視圖 ] ====================
         function renderTeacherView() {
+            // 動態更新教師控台標題顯示班級
+            const teacherTitle = document.querySelector("#viewTeacher p.text-slate-400");
+            if(teacherTitle) teacherTitle.innerText = `班級對應：${activeUser.classId} 審查區域`;
+
             const tbody = document.getElementById("reviewTableBody");
             tbody.innerHTML = "";
-            const pendings = appState.logs.filter(l => l.status === "待審核");
+            
+            // 只篩選出 "待審核" 且 "屬於該導師負責班級" 的紀錄
+            const pendings = appState.logs.filter(l => l.status === "待審核" && l.classId.toString() === activeUser.classId.toString());
 
             if (pendings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">🎉 目前無待審核紀錄</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold bg-slate-50/50 rounded-xl">🎉 ${activeUser.classId} 目前無待審核的心得紀錄，大家都表現很棒！</td></tr>`;
                 return;
             }
 
