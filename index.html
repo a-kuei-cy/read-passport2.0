@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧電子閱讀護照系統 v2.0</title>
+    <title>興嘉智慧電子閱讀護照系統 v2.0</title>
     <!-- 使用穩定版 Tailwind CSS v3 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Chart.js 圖表庫 -->
@@ -29,7 +29,7 @@
         <div class="flex items-center gap-3 cursor-pointer" onclick="navigateToLobby()">
             <span class="text-3xl animate-pulse">🏛️</span>
             <div>
-                <h1 class="text-lg md:text-xl font-bold tracking-wider font-serif">興嘉電子閱讀護照</h1>
+                <h1 class="text-lg md:text-xl font-bold tracking-wider font-serif">電子閱讀護照大廳</h1>
                 <p id="announcementMarquee" class="text-xs text-slate-300 mt-0.5 max-w-xl truncate">正在連線全校公告欄...</p>
             </div>
         </div>
@@ -55,12 +55,12 @@
             <select id="roleSelect" class="bg-black/25 text-white text-xs border border-white/10 rounded-xl p-2 focus:outline-none cursor-pointer font-bold">
                 <option value="lobby">🌐 全校護照大廳首頁</option>
                 <option value="student_login">🎒 學生入口 (班級/姓名登入)</option>
-                <option value="teacher">🧑‍🏫 教師入口</option>
-                <option value="admin">🏛️ 管理員入口</option>
+                <option value="teacher">🧑‍🏫 教師指導入口</option>
+                <option value="admin">🏛️ 全校管理員入口</option>
             </select>
 
             <div class="text-xs bg-black/40 py-1.5 px-3 rounded-xl border border-white/10 text-right min-w-[110px]">
-                <span class="font-bold block text-yellow-400" id="headerUserName">訪客</span>
+                <span class="font-bold block text-yellow-400" id="headerUserName">全校訪客</span>
                 <span class="text-[9px] text-slate-300 uppercase block font-mono" id="headerUserRole">LOBBY</span>
             </div>
         </div>
@@ -75,7 +75,7 @@
                 <div class="absolute -right-10 -bottom-10 text-9xl opacity-10 font-bold select-none pointer-events-none">WISDOM</div>
                 <div class="relative z-10 max-w-3xl">
                     <span class="bg-amber-400/20 text-amber-300 text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full border border-amber-400/30">School Reading Republic</span>
-                    <h2 class="text-2xl md:text-4xl font-serif font-extrabold mt-3 tracking-wider text-yellow-100">興嘉智慧閱讀護照</h2>
+                    <h2 class="text-2xl md:text-4xl font-serif font-extrabold mt-3 tracking-wider text-yellow-100">智慧閱讀護照共和國</h2>
                     <p class="text-xs md:text-sm text-slate-300 mt-2 leading-relaxed">
                         這裡記錄了全校旅行家征服知識版圖的精彩冒險。快拿起您的閱讀護照，加蓋專屬的國家簽證印章，開啟全新的旅途吧！
                     </p>
@@ -223,6 +223,18 @@
                         <div>
                             <label class="block text-[11px] font-bold text-slate-600 mb-1">總頁數 *</label>
                             <input type="number" id="fPages" required class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs">
+                        </div>
+                        
+                        <!-- 修復：重新補上 fRating 下拉選單，避免 JS 讀取時因 Null 指標造成整個提交崩潰並卡在 Loader 遮罩！ -->
+                        <div class="sm:col-span-2">
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1">推薦滿意度 *</label>
+                            <select id="fRating" class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs">
+                                <option value="5">⭐⭐⭐⭐⭐ 五星強力推薦，非讀不可！</option>
+                                <option value="4">⭐⭐⭐⭐ 內容精緻精彩，非常好看！</option>
+                                <option value="3">⭐⭐⭐ 還不錯，普普通通</option>
+                                <option value="2">⭐⭐ 稍微艱深枯燥</option>
+                                <option value="1">⭐ 內容不太合胃口</option>
+                            </select>
                         </div>
                         
                         <!-- 核心功能：心得繳交方式切換 -->
@@ -374,7 +386,7 @@
                     <div>
                         <label class="block text-[11px] font-bold text-slate-700 mb-1.5 ml-1">就讀班級</label>
                         <select id="loginClassNum" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
-                            <!-- JS 動態填入 1~8 班 -->
+                            <!-- JS 動態生成 -->
                         </select>
                     </div>
                 </div>
@@ -387,7 +399,7 @@
         </div>
     </div>
 
-    <!-- 教師專屬登入 Modal -->
+    <!-- 教師自訂登入 Modal -->
     <div id="teacherLoginModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-[slideUp_0.3s_ease-out] border-t-8 border-rose-600">
             <button onclick="document.getElementById('teacherLoginModal').classList.add('hidden'); setRole('lobby');" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 font-bold text-lg cursor-pointer">✕</button>
@@ -412,7 +424,7 @@
                     <div>
                         <label class="block text-[11px] font-bold text-slate-700 mb-1.5 ml-1">指導班級</label>
                         <select id="teacherLoginClassNum" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none cursor-pointer">
-                            <!-- JS 動態填入 1~8 班 -->
+                            <!-- JS 動態生成 -->
                         </select>
                     </div>
                 </div>
@@ -675,7 +687,7 @@
             const profile = appState.users.find(u => u.uid === activeUser.uid) || { level: 1, exp: 0 };
             
             document.getElementById("stuPassportTitle").innerText = `${activeUser.name} 的閱讀護照`;
-            document.getElementById("stuClassTag").innerText = `班級：${activeUser.classId}`;
+            document.getElementById("stuClassTag").innerText = `班級: ${activeUser.classId}`;
             document.getElementById("stuLevelTitle").innerText = `等級 ${profile.level} · 智慧旅行家 (${profile.exp} EXP)`;
             
             const approvedCount = myLogs.filter(l => l.status === "已核章").length;
@@ -813,7 +825,7 @@
                 author: document.getElementById("fAuthor").value || "未提供",
                 category: document.getElementById("fCategory").value,
                 pages: document.getElementById("fPages").value,
-                rating: document.getElementById("fRating").value,
+                rating: document.getElementById("fRating").value, // 修復：現在此元素確定存在於 HTML 中，不再會造成 JavaScript Crash！
                 review: isPhoto ? "已透過紙本拍照上傳" : document.getElementById("fReviewText").value,
                 photoBase64: isPhoto ? photoBase64Data : "",
                 mimeType: photoMimeType
