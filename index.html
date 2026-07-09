@@ -75,7 +75,7 @@
                 <div class="absolute -right-10 -bottom-10 text-9xl opacity-10 font-bold select-none pointer-events-none">WISDOM</div>
                 <div class="relative z-10 max-w-3xl">
                     <span class="bg-amber-400/20 text-amber-300 text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full border border-amber-400/30">School Reading Republic</span>
-                    <h2 class="text-2xl md:text-4xl font-serif font-extrabold mt-3 tracking-wider text-yellow-100">興嘉智慧閱讀護照</h2>
+                    <h2 class="text-2xl md:text-4xl font-serif font-extrabold mt-3 tracking-wider text-yellow-100">智慧閱讀護照共和國</h2>
                     <p class="text-xs md:text-sm text-slate-300 mt-2 leading-relaxed">
                         這裡記錄了全校旅行家征服知識版圖的精彩冒險。快拿起您的閱讀護照，加蓋專屬的國家簽證印章，開啟全新的旅途吧！
                     </p>
@@ -701,56 +701,56 @@
             switchDashboardView();
         }
 
-        // 管理員最高權限驗證
-        function performAdminLogin() {
-            const pwd = document.getElementById("adminPwdInput").value;
-            if (pwd !== ADMIN_PASSCODE) {
-                return showCustomToast("最高管理員密碼錯誤", "error");
-            }
-
-            activeUser = { uid: "ADMIN", name: "全校管理員", role: "admin", classId: "全校" };
-            document.getElementById('adminLoginModal').classList.add('hidden');
-            document.getElementById('adminPwdInput').value = "";
-            showCustomToast("系統最高管理權限已解鎖！", "success");
-
-            const roleSelect = document.getElementById("roleSelect");
-            let adminOpt = Array.from(roleSelect.options).find(o => o.value === "admin_active");
-            if (!adminOpt) {
-                adminOpt = document.createElement("option");
-                adminOpt.value = "admin_active";
-                roleSelect.add(adminOpt, roleSelect.options[roleSelect.options.length]);
-            }
-            adminOpt.text = `🏛️ 最高管理控制台`;
-            roleSelect.value = "admin_active";
-
-            switchDashboardView();
+        // 點擊Logo快速返回大廳
+        function navigateToLobby() {
+            setRole('lobby');
         }
 
-        // 同步 API (優化版：連線異常自動載入降級備用模式，防止破圖)
+        // 同步 Google Apps Script / Sheets 資料 (CORS 終極穿透版)
         async function syncCloudData() {
-            toggleLoader(true, "正在連線雲端資料庫...");
+            toggleLoader(true);
             try {
-                const response = await fetch(`${GAS_URL}?action=getInitData`);
-                appState = await response.json();
+                // 1. 使用 URLSearchParams 確保不會觸發 OPTIONS 預檢請求
+                const url = new URL(GAS_URL);
+                url.searchParams.append('action', 'getInitData');
+
+                // 2. 使用最基礎的 fetch GET，不夾帶任何敏感 Header
+                const response = await fetch(url.toString(), {
+                    method: 'GET',
+                    mode: 'cors', // 明確宣告跨域
+                    cache: 'no-cache'
+                });
                 
-                // 連線成功狀態燈變更為綠色
-                document.getElementById("syncStatusIndicator").innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span><span>雲端同步成功</span>';
-                document.getElementById("syncStatusIndicator").className = "flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold animate-pulse";
+                // 3. 確保回傳狀態正常
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                
+                // 4. 防呆：檢查後端是否回傳成功狀態
+                if(data.status !== "success") throw new Error("後端回傳資料格式錯誤");
+
+                appState = data;
+                
+                // 更新頂部連線狀態燈為綠色成功
+                const statusIndicator = document.getElementById("syncStatusIndicator");
+                statusIndicator.className = "flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold animate-pulse";
+                statusIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>雲端連線成功</span>';
+
                 switchDashboardView();
             } catch (err) {
-                // 連線異常狀態燈變更為紅色
-                document.getElementById("syncStatusIndicator").innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span><span>連線異常 (載入本地儲存區)</span>';
-                document.getElementById("syncStatusIndicator").className = "flex items-center gap-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold";
-                showCustomToast("與 Google 試算表連線中斷！已為您啟動本地備用沙盒體驗模式。", "error");
+                console.error("CORS 連線失敗詳細資訊:", err); // 讓您在 F12 開發者工具中能看到真實的阻擋原因
                 
-                // 離線預設資料填充，確保網頁完全不崩壞
-                appState = { logs: [], users: [], tasks: [], announcements: [], classes: [], quotes: BACKUP_QUOTES };
-                switchDashboardView();
+                const statusIndicator = document.getElementById("syncStatusIndicator");
+                statusIndicator.className = "flex items-center gap-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold";
+                statusIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>連線中斷</span>';
+                
+                showCustomToast("無法成功同步雲端試算表。若持續發生，請確認您的 Google 帳號是否允許發布公開的網頁應用程式。", "error");
             } finally {
                 toggleLoader(false);
             }
         }
 
+        // SPA 視窗中央控制調度
         function switchDashboardView() {
             document.querySelectorAll(".view-panel").forEach(p => p.classList.add("hidden"));
             document.getElementById("headerUserName").innerText = activeUser.name;
