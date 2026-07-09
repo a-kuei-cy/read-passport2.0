@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>興嘉智慧電子閱讀護照系統 v2.0</title>
+    <title>智慧電子閱讀護照系統 v3.0</title>
     <!-- 使用穩定版 Tailwind CSS v3 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Chart.js 圖表庫 -->
@@ -22,7 +22,7 @@
         .bg-grid-pattern { background-image: radial-gradient(rgba(229, 193, 88, 0.1) 1px, transparent 0); background-size: 24px 24px; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen selection:bg-indigo-500 selection:text-white pb-12">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen selection:bg-[#1e2d42] selection:text-yellow-400 pb-12">
 
     <!-- ==================== 頂部導航列 ==================== -->
     <header id="mainHeader" class="bg-[#1e2d42] text-[#e5c158] transition-colors duration-500 shadow-lg px-6 py-4 sticky top-0 z-40 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -36,8 +36,8 @@
 
         <div class="flex flex-wrap items-center gap-3">
             <!-- 雲端同步狀態燈 -->
-            <div id="syncStatusIndicator" class="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span><span>雲端連線成功</span>
+            <div id="syncStatusIndicator" class="flex items-center gap-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold">
+                <span class="w-2 h-2 rounded-full bg-rose-500"></span><span>正在初始化連線...</span>
             </div>
 
             <!-- 護照主題色切換 -->
@@ -75,7 +75,7 @@
                 <div class="absolute -right-10 -bottom-10 text-9xl opacity-10 font-bold select-none pointer-events-none">WISDOM</div>
                 <div class="relative z-10 max-w-3xl">
                     <span class="bg-amber-400/20 text-amber-300 text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full border border-amber-400/30">School Reading Republic</span>
-                    <h2 class="text-2xl md:text-4xl font-serif font-extrabold mt-3 tracking-wider text-yellow-100">智慧閱讀護照共和國</h2>
+                    <h2 class="text-2xl md:text-4xl font-serif font-extrabold mt-3 tracking-wider text-yellow-100">興嘉智慧閱讀護照</h2>
                     <p class="text-xs md:text-sm text-slate-300 mt-2 leading-relaxed">
                         這裡記錄了全校旅行家征服知識版圖的精彩冒險。快拿起您的閱讀護照，加蓋專屬的國家簽證印章，開啟全新的旅途吧！
                     </p>
@@ -96,8 +96,8 @@
                     </div>
                     <div onclick="setRole('admin')" class="bg-white/10 hover:bg-white/15 border border-white/10 p-5 rounded-2xl cursor-pointer transition transform hover:-translate-y-1 hover:shadow-lg group">
                         <div class="text-3xl group-hover:scale-110 transition-transform">🏛️</div>
-                        <h4 class="font-bold text-sm text-yellow-300 mt-3">全校資訊教務後台</h4>
-                        <p class="text-[11px] text-slate-300 mt-1">掌握大數據分析、推播滾動公告、編輯雲端庫。</p>
+                        <h4 class="font-bold text-sm text-yellow-300 mt-3">全校最高權限管理員</h4>
+                        <p class="text-[11px] text-slate-300 mt-1">集體派送任務、編輯刪除全校紀錄、公告與金句維護。</p>
                         <span class="text-[10px] text-yellow-400 font-bold mt-3 block group-hover:underline">系統後台 →</span>
                     </div>
                 </div>
@@ -167,6 +167,13 @@
                     </div>
                 </div>
 
+                <!-- 輪播金句區域 -->
+                <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
+                    <h4 class="font-bold text-xs text-amber-900 mb-1 flex items-center gap-1">✨ 每日悅讀金句</h4>
+                    <p id="studentQuoteText" class="text-xs text-amber-800 italic leading-relaxed">載入金句中...</p>
+                </div>
+
+                <!-- 班級指定任務 -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                     <h4 class="font-bold text-xs text-slate-700 mb-3 flex items-center gap-2">📋 班級挑戰任務</h4>
                     <div id="studentTasksList" class="space-y-2 text-xs"></div>
@@ -225,7 +232,6 @@
                             <input type="number" id="fPages" required class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs">
                         </div>
                         
-                        <!-- 修復：重新補上 fRating 下拉選單，避免 JS 讀取時因 Null 指標造成整個提交崩潰並卡在 Loader 遮罩！ -->
                         <div class="sm:col-span-2">
                             <label class="block text-[11px] font-bold text-slate-600 mb-1">推薦滿意度 *</label>
                             <select id="fRating" class="w-full p-2.5 border rounded-xl bg-slate-50 text-xs">
@@ -237,7 +243,7 @@
                             </select>
                         </div>
                         
-                        <!-- 核心功能：心得繳交方式切換 -->
+                        <!-- 心得繳交方式切換 -->
                         <div class="sm:col-span-2 mt-2 border border-indigo-100 rounded-xl p-4 bg-white shadow-sm">
                             <label class="block text-sm font-bold text-indigo-800 mb-3 pb-2 border-b border-indigo-50">選擇心得繳交方式 (二擇一) *</label>
                             <div class="flex gap-6 mb-4">
@@ -287,15 +293,15 @@
                     <p class="text-xs text-slate-400 mt-0.5">可在此審查文字或照片心得，並加蓋核章</p>
                 </div>
                 <button onclick="triggerCsvExport()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition shadow-sm cursor-pointer">
-                    📥 匯出全班報表
+                    📥 匯出班級報表
                 </button>
             </div>
 
             <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100">
                 <h4 class="text-xs font-bold text-indigo-900 mb-3">📌 派發指定閱讀任務</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                    <div><label class="block text-[10px] text-indigo-700 mb-1">任務名稱</label><input type="text" id="taskTitleInput" class="w-full p-2.5 bg-white text-xs border rounded-xl"></div>
-                    <div><label class="block text-[10px] text-indigo-700 mb-1">指定書目</label><input type="text" id="taskBookInput" class="w-full p-2.5 bg-white text-xs border rounded-xl"></div>
+                    <div><label class="block text-[10px] text-indigo-700 mb-1">任務名稱</label><input type="text" id="taskTitleInput" class="w-full p-2.5 bg-white text-xs border rounded-xl" placeholder="如：寒假課外悅讀"></div>
+                    <div><label class="block text-[10px] text-indigo-700 mb-1">指定書目</label><input type="text" id="taskBookInput" class="w-full p-2.5 bg-white text-xs border rounded-xl" placeholder="如：昆蟲記"></div>
                     <button onclick="handleTeacherTaskSubmit()" class="bg-indigo-600 text-white font-bold text-xs py-2.5 rounded-xl hover:bg-indigo-700 transition">指派任務</button>
                 </div>
             </div>
@@ -315,169 +321,287 @@
             </div>
         </section>
 
-        <!-- [視圖 3] 全校管理者端介面 -->
+        <!-- [視圖 3] 全校最高權限管理者端介面 -->
         <section id="viewAdmin" class="view-panel hidden bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-6">
-            <h2 class="text-lg font-bold text-slate-800 border-b pb-3">🏛️ 全校資訊教務處後台</h2>
-            <div class="grid grid-cols-3 gap-4">
-                <div class="bg-slate-50 p-4 rounded-2xl border text-center"><span class="text-[11px] text-slate-400">總學生</span><span class="text-xl font-black block" id="admTotalUsers">--</span></div>
-                <div class="bg-slate-50 p-4 rounded-2xl border text-center"><span class="text-[11px] text-slate-400">總書目</span><span class="text-xl font-black block" id="admTotalLogs">--</span></div>
-                <div class="bg-slate-50 p-4 rounded-2xl border text-center"><span class="text-[11px] text-slate-400">總公告</span><span class="text-xl font-black block" id="admTotalAnns">--</span></div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                <div class="bg-slate-50 p-5 rounded-2xl border">
-                    <h4 class="font-bold text-xs text-slate-700 mb-3">📣 發布跑馬燈公告</h4>
-                    <form onsubmit="postAdminAnnounce(event)" class="space-y-3">
-                        <input type="text" id="admAnnTitle" required placeholder="標題" class="w-full p-2.5 border rounded-xl text-xs">
-                        <textarea id="admAnnContent" rows="3" required placeholder="內文" class="w-full p-2.5 border rounded-xl text-xs"></textarea>
-                        <button type="submit" class="w-full bg-slate-900 text-white font-bold text-xs py-2.5 rounded-xl">寫入試算表</button>
-                    </form>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">🏛️ 全校資訊教務處最高權限後台</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">系統大數據調度與核心表單管理</p>
                 </div>
-                <div class="border rounded-2xl p-6 bg-indigo-50/20 border-indigo-100 flex flex-col justify-between">
-                    <div>
-                        <h4 class="font-bold text-xs text-indigo-950 mb-2">💡 資料庫維護</h4>
-                        <p class="text-xs text-slate-500">本系統採用 Serverless 架構，所有名冊與紀錄可直接於 Google Sheets 中編輯。</p>
+                <div class="flex gap-2">
+                    <button onclick="triggerCsvExportAll()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition shadow-sm cursor-pointer">
+                        📥 匯出全校所有數據
+                    </button>
+                    <a href="#" id="dbLinkBtn" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition shadow-sm inline-block">
+                        🔗 打開後端雲端試算表
+                    </a>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-4">
+                <div class="bg-slate-50 p-4 rounded-2xl border text-center"><span class="text-[11px] text-slate-400">總學生</span><span class="text-xl font-black block" id="admTotalUsers">--</span></div>
+                <div class="bg-slate-50 p-4 rounded-2xl border text-center"><span class="text-[11px] text-slate-400">總書目紀錄</span><span class="text-xl font-black block" id="admTotalLogs">--</span></div>
+                <div class="bg-slate-50 p-4 rounded-2xl border text-center"><span class="text-[11px] text-slate-400">總公告數</span><span class="text-xl font-black block" id="admTotalAnns">--</span></div>
+                <div class="bg-slate-50 p-4 rounded-2xl border text-center"><span class="text-[11px] text-slate-400">推薦金句</span><span class="text-xl font-black block" id="admTotalQuotes">--</span></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+                <!-- 1. 全校集體指派任務 -->
+                <div class="bg-slate-50 p-5 rounded-2xl border">
+                    <h4 class="font-bold text-xs text-slate-700 mb-3 flex items-center gap-1">📌 跨班／全校集體指派閱讀挑戰</h4>
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] text-slate-500 mb-1">對象班級</label>
+                                <select id="admTaskClass" class="w-full p-2.5 bg-white border rounded-xl text-xs">
+                                    <option value="全校">🌍 全校集體指派</option>
+                                    <option value="101">1年1班</option>
+                                    <option value="102">1年2班</option>
+                                    <option value="201">2年1班</option>
+                                    <option value="202">2年2班</option>
+                                    <option value="301">3年1班</option>
+                                    <option value="302">3年2班</option>
+                                    <option value="401">4年1班</option>
+                                    <option value="402">4年2班</option>
+                                    <option value="501">5年1班</option>
+                                    <option value="502">5年2班</option>
+                                    <option value="601">6年1班</option>
+                                    <option value="602">6年2班</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 mb-1">任務名稱</label>
+                                <input type="text" id="admTaskTitle" placeholder="如：全校科學讀書節" class="w-full p-2.5 bg-white border rounded-xl text-xs">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] text-slate-500 mb-1">指定目標書名</label>
+                                <input type="text" id="admTaskBook" placeholder="如：法布爾昆蟲記" class="w-full p-2.5 bg-white border rounded-xl text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 mb-1">截止日期</label>
+                                <input type="date" id="admTaskDueDate" value="2026-08-31" class="w-full p-2.5 bg-white border rounded-xl text-xs">
+                            </div>
+                        </div>
+                        <button onclick="handleAdminTaskSubmit()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl">一鍵集體派送任務</button>
                     </div>
-                    <a href="#" id="dbLinkBtn" target="_blank" class="block text-center text-xs font-bold text-indigo-700 bg-indigo-100 border border-indigo-200 py-3 rounded-xl hover:bg-indigo-200 mt-4">🔗 開啟 Google 試算表</a>
+                </div>
+
+                <!-- 2. 發布系統公告與悅讀金句維護 -->
+                <div class="bg-slate-50 p-5 rounded-2xl border space-y-4">
+                    <div>
+                        <h4 class="font-bold text-xs text-slate-700 mb-2">📣 發布全校跑馬燈公告</h4>
+                        <div class="flex gap-2">
+                            <input type="text" id="admAnnTitle" placeholder="公告標題" class="w-1/3 p-2.5 border rounded-xl bg-white text-xs">
+                            <input type="text" id="admAnnContent" placeholder="詳細公告內文" class="w-2/3 p-2.5 border rounded-xl bg-white text-xs">
+                            <button onclick="postAdminAnnounce()" class="bg-slate-900 text-white px-4 text-xs font-bold rounded-xl whitespace-nowrap">推播</button>
+                        </div>
+                    </div>
+                    <div class="border-t pt-3">
+                        <h4 class="font-bold text-xs text-slate-700 mb-2">✨ 新增悅讀金句推播</h4>
+                        <div class="flex gap-2">
+                            <input type="text" id="admQuoteContent" placeholder="書中自有黃金屋..." class="w-2/3 p-2.5 border rounded-xl bg-white text-xs">
+                            <input type="text" id="admQuoteAuthor" placeholder="作者 (佚名)" class="w-1/3 p-2.5 border rounded-xl bg-white text-xs">
+                            <button onclick="postAdminQuote()" class="bg-amber-600 text-white px-4 text-xs font-bold rounded-xl whitespace-nowrap">新增</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 全校日誌紀錄集中管理面板（可搜尋、編輯、刪除） -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200">
+                <h4 class="font-bold text-sm text-slate-700 border-b pb-2 mb-3">🛠️ 全校閱讀紀錄集中管理面板</h4>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="adminSearchInput" oninput="filterAdminLogsTable()" placeholder="🔍 搜尋學生姓名、班級或書籍名稱..." class="w-full max-w-sm p-2 bg-slate-50 border rounded-xl text-xs">
+                </div>
+                <div class="overflow-x-auto max-h-[300px] no-scrollbar">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 font-bold border-b border-slate-200 text-slate-600">
+                                <th class="p-2">班級</th>
+                                <th class="p-2">學生姓名</th>
+                                <th class="p-2">書籍名稱 / 頁數</th>
+                                <th class="p-2">閱讀感想</th>
+                                <th class="p-2">審核狀態</th>
+                                <th class="p-2 text-center">後台操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminLogsTableBody" class="divide-y divide-slate-100">
+                            <!-- 學生歷史資料動態掛載於此 -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
 
     </main>
 
-    <footer class="text-center text-xs text-slate-400 py-6 border-t border-slate-200 mt-12">
-        <p>© 2026 智慧電子閱讀護照系統 · 智慧大冒險計劃</p>
-    </footer>
-
-    <!-- ==================== 彈出視窗：動態遮罩與登入Modal ==================== -->
-    <div id="loaderMask" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white font-bold text-sm hidden">
-        <div class="w-10 h-10 border-4 border-t-amber-400 border-white/20 rounded-full animate-spin mb-4"></div>
-        <span id="loaderText">正在連線雲端資料庫，請稍候...</span>
+    <!-- ==================== 管理者最高權限登入 Modal ==================== -->
+    <div id="adminLoginModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative">
+            <button onclick="document.getElementById('adminLoginModal').classList.add('hidden'); setRole('lobby');" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            <div class="text-center mb-6">
+                <span class="text-4xl">🏛️</span>
+                <h3 class="font-bold text-lg text-slate-800 mt-2">最高權限管理員認證</h3>
+                <p class="text-xs text-slate-500 mt-1">請輸入全校資訊教務後台通行密碼</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">系統通行密碼</label>
+                    <input type="password" id="adminPwdInput" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm tracking-widest text-center" placeholder="••••••••">
+                </div>
+                <button onclick="performAdminLogin()" class="w-full bg-[#1e2d42] hover:bg-slate-800 text-yellow-400 font-bold py-3.5 rounded-xl shadow-md transition text-sm">解鎖最高控台</button>
+            </div>
+        </div>
     </div>
 
-    <!-- 自訂通知 Toast -->
+    <!-- ==================== 管理者編輯特定紀錄 Modal ==================== -->
+    <div id="adminEditLogModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl relative">
+            <button onclick="document.getElementById('adminEditLogModal').classList.add('hidden');" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            <h3 class="font-serif text-base font-bold text-slate-800 mb-4">✍️ 編輯學生閱讀紀錄</h3>
+            <input type="hidden" id="editTargetLogId">
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-600 font-bold mb-1">書籍名稱</label>
+                    <input type="text" id="editLogTitle" class="w-full p-2 bg-slate-50 border rounded-xl">
+                </div>
+                <div>
+                    <label class="block text-slate-600 font-bold mb-1">作者</label>
+                    <input type="text" id="editLogAuthor" class="w-full p-2 bg-slate-50 border rounded-xl">
+                </div>
+                <div>
+                    <label class="block text-slate-600 font-bold mb-1">書籍總頁數</label>
+                    <input type="number" id="editLogPages" class="w-full p-2 bg-slate-50 border rounded-xl">
+                </div>
+                <div>
+                    <label class="block text-slate-600 font-bold mb-1">心得感想</label>
+                    <textarea id="editLogReview" rows="3" class="w-full p-2 bg-slate-50 border rounded-xl font-serif"></textarea>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="document.getElementById('adminEditLogModal').classList.add('hidden');" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs">取消</button>
+                    <button onclick="executeAdminEditLog()" class="w-1/2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs">儲存修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登入與讀取全螢幕遮罩 -->
+    <div id="loaderMask" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white font-bold text-xs hidden">
+        <div class="w-8 h-8 border-4 border-t-amber-400 border-white/20 rounded-full animate-spin mb-3"></div>
+        <span id="loaderText">連線同步中...</span>
+    </div>
+
+    <!-- ==================== 自訂視覺對話框 Modal / Toasts ==================== -->
     <div id="customToast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-        <div class="bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2" id="toastContent">
-            <span id="toastMessage">通知</span>
+        <div class="bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-slate-800" id="toastContent">
+            <span id="toastMessage">自訂通知</span>
+        </div>
+    </div>
+
+    <div id="customConfirmModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl border border-slate-100">
+            <h4 class="font-serif text-base font-bold text-slate-800 mb-2" id="confirmTitle">確認執行此操作？</h4>
+            <p class="text-xs text-slate-500 leading-relaxed mb-6" id="confirmMessage">此操作將寫入雲端。</p>
+            <div class="flex gap-2">
+                <button id="confirmCancelBtn" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl cursor-pointer">取消</button>
+                <button id="confirmOkBtn" class="w-1/2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl cursor-pointer">確認</button>
+            </div>
         </div>
     </div>
 
     <!-- 學生自訂登入 Modal -->
     <div id="loginModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-[slideUp_0.3s_ease-out]">
-            <button onclick="closeLoginModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 font-bold text-lg cursor-pointer">✕</button>
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative">
+            <button onclick="document.getElementById('loginModal').classList.add('hidden'); setRole('lobby');" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
             <div class="text-center mb-6 mt-2">
                 <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner">🎒</div>
                 <h3 class="font-bold text-lg text-slate-800 font-serif">護照旅行者登入</h3>
-                <p class="text-xs text-slate-500 mt-1">請選擇您的班級並輸入真實姓名</p>
+                <p class="text-xs text-slate-500 mt-1">請選擇您的班級並輸入姓名</p>
             </div>
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-700 mb-1.5 ml-1">就讀年級</label>
-                        <select id="loginGrade" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
-                            <option value="1">一年級</option>
-                            <option value="2">二年級</option>
-                            <option value="3">三年級</option>
-                            <option value="4">四年級</option>
-                            <option value="5">五年級</option>
-                            <option value="6">六年級</option>
+                        <select id="loginGrade" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm cursor-pointer">
+                            <option value="1">一年級</option><option value="2">二年級</option><option value="3">三年級</option>
+                            <option value="4">四年級</option><option value="5">五年級</option><option value="6">六年級</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-700 mb-1.5 ml-1">就讀班級</label>
-                        <select id="loginClassNum" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
-                            <!-- JS 動態生成 -->
-                        </select>
+                        <select id="loginClass" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm cursor-pointer"></select>
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5 ml-1">真實姓名</label>
-                    <input type="text" id="loginName" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="請輸入姓名">
+                    <input type="text" id="loginName" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm" placeholder="請輸入姓名">
                 </div>
                 <button onclick="performStudentLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-md mt-2 transition text-sm cursor-pointer">啟動閱讀護照</button>
             </div>
         </div>
     </div>
 
-    <!-- 教師自訂登入 Modal -->
+    <!-- 教師指導登入 Modal -->
     <div id="teacherLoginModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative animate-[slideUp_0.3s_ease-out] border-t-8 border-rose-600">
-            <button onclick="document.getElementById('teacherLoginModal').classList.add('hidden'); setRole('lobby');" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 font-bold text-lg cursor-pointer">✕</button>
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl relative border-t-8 border-rose-600">
+            <button onclick="document.getElementById('teacherLoginModal').classList.add('hidden'); setRole('lobby');" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold">✕</button>
             <div class="text-center mb-6 mt-2">
                 <div class="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl shadow-inner">🧑‍🏫</div>
-                <h3 class="font-bold text-lg text-slate-800 font-serif">教師指導管理中心</h3>
-                <p class="text-xs text-rose-600 mt-1 font-bold">請選擇指導班級並輸入安全密碼</p>
+                <h3 class="font-bold text-lg text-slate-800 font-serif">指導教師安全登入</h3>
+                <p class="text-xs text-rose-600 mt-1 font-bold">請選擇指導班級並輸入通行密碼</p>
             </div>
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-700 mb-1.5 ml-1">指導年級</label>
-                        <select id="teacherLoginGrade" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none cursor-pointer">
-                            <option value="1">一年級</option>
-                            <option value="2">二年級</option>
-                            <option value="3">三年級</option>
-                            <option value="4">四年級</option>
-                            <option value="5">五年級</option>
-                            <option value="6">六年級</option>
+                        <select id="teacherLoginGrade" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm cursor-pointer">
+                            <option value="1">一年級</option><option value="2">二年級</option><option value="3">三年級</option>
+                            <option value="4">四年級</option><option value="5">五年級</option><option value="6">六年級</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-700 mb-1.5 ml-1">指導班級</label>
-                        <select id="teacherLoginClassNum" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none cursor-pointer">
-                            <!-- JS 動態生成 -->
-                        </select>
+                        <select id="teacherLoginClassNum" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm cursor-pointer"></select>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5 ml-1">系統通行密碼</label>
-                    <input type="password" id="teacherLoginPwd" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none tracking-widest" placeholder="請輸入密碼">
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 ml-1">教師通行密碼</label>
+                    <input type="password" id="teacherPwdInput" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-center tracking-widest" placeholder="••••••••">
                 </div>
-                <button onclick="performTeacherLogin()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3.5 rounded-xl shadow-md mt-2 transition text-sm cursor-pointer">登入審核中心</button>
+                <button onclick="performTeacherLogin()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3.5 rounded-xl shadow-md mt-2 transition text-sm cursor-pointer">進入審核中心</button>
             </div>
         </div>
     </div>
 
-    <!-- ==================== 核心程式腳本 ==================== -->
+    <!-- ==================== 系統核心程式腳本 ==================== -->
     <script>
-        // ⚠️ 您專屬的 Google Apps Script API 網址
+        // ⚠️ 請填入您重新部署完取得的 GAS 網頁應用程式網址！
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwV_8Ssl7Dez00oYTodSNl8N-hDVPewBqqw6PSnDwrn54f-JURlPrFn-Xf7WQUCZmS6iQ/exec";
+        
+        // 🔒 前端管理者驗證通行密碼 (可在後端或前端同步更改)
+        const ADMIN_PASSCODE = "Admin9999";
 
-        let appState = { logs: [], users: [], tasks: [], announcements: [], classes: [] };
+        // 全域核心快取狀態
+        let appState = { logs: [], users: [], tasks: [], announcements: [], classes: [], quotes: [] };
         let activeUser = { uid: "GUEST", name: "全校訪客", role: "lobby", classId: "" };
         let chartInstances = { radar: null, lobbyRadar: null };
         let qrScanner = null;
         let photoBase64Data = ""; 
         let photoMimeType = "";
 
-        const THEME_MAP = {
-            blue: { coverBg: 'bg-[#1e2d42]', border: 'border-[#e5c158]', text: 'text-[#e5c158]' },
-            green: { coverBg: 'bg-[#1c352d]', border: 'border-[#d4af37]', text: 'text-[#d4af37]' },
-            burgundy: { coverBg: 'bg-[#4a1525]', border: 'border-[#f3cd78]', text: 'text-[#f3cd78]' },
-            purple: { coverBg: 'bg-[#2e1a47]', border: 'border-[#e0b0ff]', text: 'text-[#e0b0ff]' }
-        };
-
-        const CATEGORY_MAP = {
-            literature: { label: '文學故事', emoji: '🎭', color: 'bg-rose-100 text-rose-800' },
-            science: { label: '科普大自然', emoji: '🔬', color: 'bg-cyan-100 text-cyan-800' },
-            history: { label: '歷史社會', emoji: '🏛️', color: 'bg-amber-100 text-amber-900' },
-            art: { label: '藝術美學', emoji: '🎨', color: 'bg-purple-100 text-purple-800' },
-            growth: { label: '自我成長', emoji: '🌱', color: 'bg-emerald-100 text-emerald-800' },
-            fantasy: { label: '奇幻魔法', emoji: '🔮', color: 'bg-indigo-100 text-indigo-800' }
-        };
+        // 預設兜底防呆本地資料（在連線中斷或新工作表載入時，供極速無痛體驗使用）
+        const BACKUP_QUOTES = [
+            { content: "讀一本好書，就是和許多高尚的人談話。", author: "歌德" },
+            { content: "書籍是全世界的營養品。生活裡沒有書籍，就好像沒有陽光。", author: "莎士比亞" },
+            { content: "讀書破萬卷，下筆如有神。", author: "杜甫" }
+        ];
 
         document.addEventListener("DOMContentLoaded", async function() {
-            // 初始化動態生成 1~8 班下拉選單
-            const populateClasses = (selectId) => {
-                const select = document.getElementById(selectId);
-                for(let i=1; i<=8; i++) {
-                    let opt = document.createElement('option');
-                    opt.value = i;
-                    opt.innerHTML = `${i} 班`;
-                    select.appendChild(opt);
-                }
-            };
-            populateClasses('loginClassNum');
-            populateClasses('teacherLoginClassNum');
+            // 動態組裝 1-8 班下拉選單
+            initClassSelectOptions("loginClass");
+            initClassSelectOptions("teacherLoginClassNum");
 
             document.getElementById("roleSelect").value = activeUser.role;
             await syncCloudData();
@@ -485,105 +609,143 @@
             document.getElementById("addBookForm").addEventListener("submit", handleStudentFormSubmit);
         });
 
-        // 大廳切換與登入功能
+        function initClassSelectOptions(selectId) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            select.innerHTML = "";
+            for (let i = 1; i <= 8; i++) {
+                let opt = document.createElement("option");
+                opt.value = i;
+                opt.innerHTML = `${i} 班`;
+                select.appendChild(opt);
+            }
+        }
+
         function navigateToLobby() { setRole('lobby'); }
 
         function setRole(roleName) {
-            document.getElementById("roleSelect").value = roleName;
             if(roleName === "lobby") {
                 activeUser = { uid: "GUEST", name: "全校訪客", role: "lobby", classId: "" };
+                document.getElementById("roleSelect").value = "lobby";
                 switchDashboardView();
             } else if (roleName === "student_login") {
                 document.getElementById('loginModal').classList.remove('hidden');
-                // 重設回大廳選項，避免選單卡在 student_login
-                document.getElementById("roleSelect").value = 'lobby'; 
+                document.getElementById("roleSelect").value = activeUser.role;
             } else if (roleName === "teacher") {
                 document.getElementById('teacherLoginModal').classList.remove('hidden');
-                document.getElementById("roleSelect").value = 'lobby'; // 預防取消登入卡住
+                document.getElementById("roleSelect").value = activeUser.role;
             } else if (roleName === "admin") {
-                activeUser = { uid: "ADMIN", name: "全校系統管理員", role: "admin", classId: "" };
-                switchDashboardView();
+                document.getElementById('adminLoginModal').classList.remove('hidden');
+                document.getElementById("roleSelect").value = activeUser.role;
             }
         }
 
         function closeLoginModal() {
             document.getElementById('loginModal').classList.add('hidden');
-            document.getElementById("roleSelect").value = 'lobby';
         }
 
-        // 教師專屬登入驗證
+        // 學生自訂班級姓名登入
+        function performStudentLogin() {
+            const grade = document.getElementById("loginGrade").value;
+            const classNum = document.getElementById("loginClass").value;
+            const name = document.getElementById("loginName").value.trim();
+            if(!name) return showCustomToast("請填寫您的真實姓名", "error");
+
+            // 標準化班級代碼 (如 101, 502)
+            const classId = grade + "0" + classNum;
+            activeUser = { uid: `${classId}_${name}`, name: name, role: "student", classId: classId };
+            
+            closeLoginModal();
+            showCustomToast(`啟航！歡迎回來，${classId} ${name} 旅行家`, "success");
+
+            // 將臨時選項加載至右上角
+            const roleSelect = document.getElementById("roleSelect");
+            let studentOpt = Array.from(roleSelect.options).find(o => o.value === "student_active");
+            if (!studentOpt) {
+                studentOpt = document.createElement("option");
+                studentOpt.value = "student_active";
+                roleSelect.add(studentOpt, roleSelect.options[1]);
+            }
+            studentOpt.text = `🎒 個人護照 (${classId} ${name})`;
+            roleSelect.value = "student_active";
+
+            switchDashboardView();
+        }
+
+        // 教師指導入口驗證
         function performTeacherLogin() {
-            const pwd = document.getElementById("teacherLoginPwd").value;
-            const g = document.getElementById("teacherLoginGrade").value;
-            const c = document.getElementById("teacherLoginClassNum").value;
-            
-            // 組合班級名稱，例如 101, 508
-            const clsName = `${g}0${c}`;
-            
-            // 安全密碼驗證
+            const grade = document.getElementById("teacherLoginGrade").value;
+            const classNum = document.getElementById("teacherLoginClassNum").value;
+            const pwd = document.getElementById("teacherPwdInput").value;
+            const classId = grade + "0" + classNum;
+
             if (pwd !== "S2860885") {
                 return showCustomToast("密碼錯誤，請重新輸入", "error");
             }
-            
-            // 登入成功，設定使用者狀態為指定班級的導師
-            activeUser = { uid: "T_" + clsName, name: clsName + " 指導教師", role: "teacher", classId: clsName };
-            
+
+            activeUser = { uid: "T_" + classId, name: classId + "導師", role: "teacher", classId: classId };
             document.getElementById('teacherLoginModal').classList.add('hidden');
-            document.getElementById('teacherLoginPwd').value = ""; // 清空密碼欄
-            
-            showCustomToast(`登入成功！歡迎進入 ${clsName} 班 審核控台`, "success");
-            
-            // 更新右上角下拉選單顯示
+            document.getElementById('teacherPwdInput').value = "";
+            showCustomToast(`教師登入成功：進入 ${classId} 班審核控台`, "success");
+
             const roleSelect = document.getElementById("roleSelect");
-            const tempOpt = document.createElement("option");
-            tempOpt.value = "teacher_temp";
-            tempOpt.text = `🧑‍🏫 ${clsName} 管理中心`;
-            roleSelect.add(tempOpt, roleSelect.options[2]);
-            roleSelect.value = "teacher_temp";
+            let teacherOpt = Array.from(roleSelect.options).find(o => o.value === "teacher_active");
+            if (!teacherOpt) {
+                teacherOpt = document.createElement("option");
+                teacherOpt.value = "teacher_active";
+                roleSelect.add(teacherOpt, roleSelect.options[3]);
+            }
+            teacherOpt.text = `🧑‍🏫 教師管理中心 (${classId} 班)`;
+            roleSelect.value = "teacher_active";
 
             switchDashboardView();
         }
 
-        function performStudentLogin() {
-            const g = document.getElementById("loginGrade").value;
-            const c = document.getElementById("loginClassNum").value;
-            const nm = document.getElementById("loginName").value.trim();
-            
-            if(!nm) return showCustomToast("請務必填寫您的真實姓名", "error");
-            
-            // 組合班級名稱，例如 101, 508
-            const clsName = `${g}0${c}`;
+        // 管理員最高權限驗證
+        function performAdminLogin() {
+            const pwd = document.getElementById("adminPwdInput").value;
+            if (pwd !== ADMIN_PASSCODE) {
+                return showCustomToast("最高管理員密碼錯誤", "error");
+            }
 
-            // 組合班級+姓名作為資料庫的 UID 識別
-            activeUser = { uid: `${clsName}_${nm}`, name: nm, role: "student", classId: clsName };
-            
-            closeLoginModal();
-            showCustomToast(`歡迎回來，${clsName} 班 ${nm}！`, "success");
-            
-            // 讓右上角選單顯示為學生入口
+            activeUser = { uid: "ADMIN", name: "全校管理員", role: "admin", classId: "全校" };
+            document.getElementById('adminLoginModal').classList.add('hidden');
+            document.getElementById('adminPwdInput').value = "";
+            showCustomToast("系統最高管理權限已解鎖！", "success");
+
             const roleSelect = document.getElementById("roleSelect");
-            const tempOpt = document.createElement("option");
-            tempOpt.value = "student_temp";
-            tempOpt.text = `🎒 個人護照 (${clsName} ${nm})`;
-            roleSelect.add(tempOpt, roleSelect.options[1]);
-            roleSelect.value = "student_temp";
+            let adminOpt = Array.from(roleSelect.options).find(o => o.value === "admin_active");
+            if (!adminOpt) {
+                adminOpt = document.createElement("option");
+                adminOpt.value = "admin_active";
+                roleSelect.add(adminOpt, roleSelect.options[roleSelect.options.length]);
+            }
+            adminOpt.text = `🏛️ 最高管理控制台`;
+            roleSelect.value = "admin_active";
 
             switchDashboardView();
         }
 
-        // 同步 API
+        // 同步 API (優化版：連線異常自動載入降級備用模式，防止破圖)
         async function syncCloudData() {
-            toggleLoader(true, "連線雲端資料庫中...");
+            toggleLoader(true, "正在連線雲端資料庫...");
             try {
                 const response = await fetch(`${GAS_URL}?action=getInitData`);
                 appState = await response.json();
-                document.getElementById("syncStatusIndicator").innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span><span>雲端連線成功</span>';
-                document.getElementById("syncStatusIndicator").className = "flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold";
+                
+                // 連線成功狀態燈變更為綠色
+                document.getElementById("syncStatusIndicator").innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span><span>雲端同步成功</span>';
+                document.getElementById("syncStatusIndicator").className = "flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold animate-pulse";
                 switchDashboardView();
             } catch (err) {
-                document.getElementById("syncStatusIndicator").innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>連線異常</span>';
+                // 連線異常狀態燈變更為紅色
+                document.getElementById("syncStatusIndicator").innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span><span>連線異常 (載入本地儲存區)</span>';
                 document.getElementById("syncStatusIndicator").className = "flex items-center gap-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold";
-                showCustomToast("雲端同步失敗，請確認網路連線。", "error");
+                showCustomToast("與 Google 試算表連線中斷！已為您啟動本地備用沙盒體驗模式。", "error");
+                
+                // 離線預設資料填充，確保網頁完全不崩壞
+                appState = { logs: [], users: [], tasks: [], announcements: [], classes: [], quotes: BACKUP_QUOTES };
+                switchDashboardView();
             } finally {
                 toggleLoader(false);
             }
@@ -594,9 +756,12 @@
             document.getElementById("headerUserName").innerText = activeUser.name;
             document.getElementById("headerUserRole").innerText = activeUser.role.toUpperCase();
 
+            // 系統公告推播廣播
             if (appState.announcements && appState.announcements.length > 0) {
                 const latest = appState.announcements[appState.announcements.length - 1];
-                document.getElementById("announcementMarquee").innerText = `📢 全校公告：[${latest.date}] ${latest.title} — ${latest.content}`;
+                document.getElementById("announcementMarquee").innerText = `📢 全校最新公告：[${latest.date}] ${latest.title} — ${latest.content}`;
+            } else {
+                document.getElementById("announcementMarquee").innerText = `📢 最新公告：暑期悅讀冒險正式啟航！歡迎各位讀書旅行家！`;
             }
 
             if (activeUser.role === "lobby") {
@@ -614,7 +779,7 @@
             }
         }
 
-        // ==================== [ 0. 大廳視圖 ] ====================
+        // ==================== [ 0. 大廳總覽統計 ] ====================
         function renderLobbyView() {
             const logs = appState.logs || [];
             const certifiedLogs = logs.filter(l => l.status === "已核章");
@@ -623,25 +788,32 @@
             document.getElementById("lobbyTotalBooks").innerText = certifiedLogs.length;
             document.getElementById("lobbyTotalPages").innerText = certifiedLogs.reduce((sum, l) => sum + (Number(l.pages) || 0), 0);
             document.getElementById("lobbyTotalUsers").innerText = distinctUsers.size;
+            
             const totalRating = certifiedLogs.reduce((sum, l) => sum + (Number(l.rating) || 5), 0);
             document.getElementById("lobbyAvgRating").innerText = certifiedLogs.length > 0 ? (totalRating / certifiedLogs.length).toFixed(1) : "0.0";
 
+            // 班級累積競賽榜 (全自適應動態繪製)
             const classCounts = {};
-            certifiedLogs.forEach(l => { classCounts[l.classId || "其他"] = (classCounts[l.classId || "其他"] || 0) + 1; });
+            certifiedLogs.forEach(l => {
+                if (l.classId) {
+                    classCounts[l.classId] = (classCounts[l.classId] || 0) + 1;
+                }
+            });
             const lobbyClassList = document.getElementById("lobbyClassList");
             lobbyClassList.innerHTML = "";
             const sortedClasses = Object.entries(classCounts).sort((a,b) => b[1] - a[1]);
             
             if(sortedClasses.length === 0) {
-                lobbyClassList.innerHTML = `<li class="text-slate-400 text-center py-4">目前尚無班級競賽數據</li>`;
+                lobbyClassList.innerHTML = `<li class="text-slate-400 text-center py-4">目前尚無班級認證數據</li>`;
             } else {
                 sortedClasses.forEach(([className, count], i) => {
-                    const progress = (count / sortedClasses[0][1]) * 100;
+                    const maxVal = sortedClasses[0][1];
+                    const progress = maxVal > 0 ? (count / maxVal) * 100 : 0;
                     lobbyClassList.innerHTML += `
                         <li class="space-y-1">
                             <div class="flex justify-between items-center text-xs">
-                                <span class="font-bold text-slate-700">${i===0?'🏆':i+1+'.'} 班級 ${className}</span>
-                                <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-black">${count} 本</span>
+                                <span class="font-bold text-slate-700">${i===0?'🏆 冠軍':'#'+(i+1)} ${className} 班</span>
+                                <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-black">${count} 本認證</span>
                             </div>
                             <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                                 <div class="bg-indigo-600 h-full rounded-full transition-all duration-500" style="width: ${progress}%"></div>
@@ -651,6 +823,7 @@
                 });
             }
 
+            // 出入境實況串流牆
             const liveStream = document.getElementById("lobbyLiveStream");
             liveStream.innerHTML = "";
             const recentLogs = certifiedLogs.slice().reverse().slice(0, 10);
@@ -660,10 +833,10 @@
                 recentLogs.forEach(l => {
                     const cat = CATEGORY_MAP[l.category] || { emoji: "📖", label: "其他" };
                     liveStream.innerHTML += `
-                        <div class="p-2.5 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between text-[11px] mb-2">
+                        <div class="p-2.5 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between text-[11px]">
                             <div class="flex items-center gap-2">
                                 <span class="text-lg">${cat.emoji}</span>
-                                <div><p class="text-slate-800 font-bold">${l.classId} ${l.studentName} <span class="text-slate-400 font-normal">通過認證</span></p><p class="text-slate-500 truncate max-w-[150px]">《${l.title}》</p></div>
+                                <div><p class="text-slate-800 font-bold">${l.classId} 班 ${l.studentName} <span class="text-slate-400 font-normal">通過認證</span></p><p class="text-slate-500 truncate max-w-[150px]">《${l.title}》</p></div>
                             </div>
                             <span class="text-[9px] text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md font-bold uppercase">APPROVED</span>
                         </div>
@@ -671,23 +844,24 @@
                 });
             }
 
+            // 雷達熱力分佈圖
             const counts = { literature: 0, science: 0, history: 0, art: 0, growth: 0, fantasy: 0 };
             certifiedLogs.forEach(l => { if(counts[l.category] !== undefined) counts[l.category]++; });
             if(chartInstances.lobbyRadar) chartInstances.lobbyRadar.destroy();
             chartInstances.lobbyRadar = new Chart(document.getElementById("lobbyRadarChart").getContext("2d"), {
                 type: 'radar',
-                data: { labels: ['文學故事', '科普自然', '歷史社會', '藝術美學', '自我成長', '奇幻魔法'], datasets: [{ data: Object.values(counts), backgroundColor: 'rgba(245, 193, 88, 0.2)', borderColor: '#e5c158', borderWidth: 2 }] },
+                data: { labels: ['文學故事', '科普自然', '歷史社會', '藝術美學', '自我成長', '奇幻魔法'], datasets: [{ data: Object.values(counts), backgroundColor: 'rgba(229, 193, 88, 0.2)', borderColor: '#e5c158', borderWidth: 2 }] },
                 options: { plugins: { legend: { display: false } }, scales: { r: { ticks: { display: false } } } }
             });
         }
 
-        // ==================== [ 1. 學生端視圖與照片上傳機制 ] ====================
+        // ==================== [ 1. 學生端統計、日誌與挑戰任務 ] ====================
         function renderStudentView() {
             const myLogs = appState.logs.filter(l => l.uid === activeUser.uid);
             const profile = appState.users.find(u => u.uid === activeUser.uid) || { level: 1, exp: 0 };
             
             document.getElementById("stuPassportTitle").innerText = `${activeUser.name} 的閱讀護照`;
-            document.getElementById("stuClassTag").innerText = `班級: ${activeUser.classId}`;
+            document.getElementById("stuClassTag").innerText = `班級：${activeUser.classId}`;
             document.getElementById("stuLevelTitle").innerText = `等級 ${profile.level} · 智慧旅行家 (${profile.exp} EXP)`;
             
             const approvedCount = myLogs.filter(l => l.status === "已核章").length;
@@ -697,13 +871,39 @@
             document.getElementById("statPages").innerText = `${totalPages} 頁`;
             document.getElementById("statApproved").innerText = `${myLogs.length > 0 ? Math.round((approvedCount/myLogs.length)*100) : 0}%`;
 
+            // 動態隨機切換金句 (如果有新增的話)
+            const quoteText = document.getElementById("studentQuoteText");
+            const pool = appState.quotes && appState.quotes.length > 0 ? appState.quotes : BACKUP_QUOTES;
+            const randomQuote = pool[Math.floor(Math.random() * pool.length)];
+            quoteText.innerHTML = `「${randomQuote.content}」<span class="block text-right text-[10px] font-bold mt-1 text-amber-600">— ${randomQuote.author || '佚名'}</span>`;
+
+            // 💡 核心修正：班級指定任務與「全校」指派任務完美合併比對
+            const tasksList = document.getElementById("studentTasksList");
+            tasksList.innerHTML = "";
+            const myTasks = appState.tasks.filter(t => t.classId.toString() === activeUser.classId.toString() || t.classId === "全校");
+            if (myTasks.length === 0) {
+                tasksList.innerHTML = `<p class="text-slate-400 py-2 text-center text-xs">目前暫時沒有派發此班級的挑戰任務 🎒</p>`;
+            } else {
+                myTasks.forEach(t => {
+                    const completed = myLogs.some(l => l.title.includes(t.targetBook) && l.status === "已核章");
+                    tasksList.innerHTML += `
+                        <div class="p-2.5 rounded-xl border ${completed ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100'} flex items-center justify-between mb-2">
+                            <div>
+                                <p class="font-bold text-slate-800">${t.taskTitle}</p>
+                                <p class="text-[10px] text-slate-500">《${t.targetBook}》</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full font-bold text-[9px] ${completed ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">${completed ? '已達成 🏅' : '未完成'}</span>
+                        </div>
+                    `;
+                });
+            }
+
             // 渲染日誌
             const container = document.getElementById("studentLogContainer");
             container.innerHTML = myLogs.length === 0 ? `<p class="text-xs text-slate-400 text-center py-6">目前尚未有紀錄，請新增！</p>` : "";
             
             myLogs.slice().reverse().forEach(l => {
                 const cat = CATEGORY_MAP[l.category] || CATEGORY_MAP.literature;
-                // 判斷是否為照片連結
                 let reviewContent = l.photoUrl && l.photoUrl.startsWith("http")
                     ? `<a href="${l.photoUrl}" target="_blank" class="inline-flex items-center gap-1 text-indigo-600 font-bold bg-indigo-50 px-2.5 py-1.5 rounded-lg border border-indigo-100 hover:bg-indigo-100 transition mt-2">📸 點此查看已上傳之實體相片</a>`
                     : `<p class="text-slate-600 font-serif italic mt-2 leading-relaxed">「${l.review}」</p>`;
@@ -719,21 +919,6 @@
                         <div class="shrink-0 flex flex-col items-center pt-1">
                             ${l.status === '已核章' ? `<div class="stamp-seal text-[10px] text-emerald-600 border-2 border-emerald-600 border-dashed rounded-lg px-2 py-1 font-bold shadow-sm bg-emerald-50/50">APPROVED</div>` : `<span class="px-2 py-1 rounded font-bold text-[10px] bg-amber-100 text-amber-800">${l.status}</span>`}
                         </div>
-                    </div>
-                `;
-            });
-
-            // 班級任務
-            const tasksList = document.getElementById("studentTasksList");
-            tasksList.innerHTML = "";
-            const myTasks = appState.tasks.filter(t => t.classId.toString() === activeUser.classId.toString());
-            if (myTasks.length === 0) tasksList.innerHTML = `<p class="text-slate-400 py-2 text-center text-xs">目前班級無指派任務</p>`;
-            else myTasks.forEach(t => {
-                const completed = myLogs.some(l => l.title.includes(t.targetBook) && l.status === "已核章");
-                tasksList.innerHTML += `
-                    <div class="p-2.5 rounded-xl border ${completed ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100'} flex items-center justify-between mb-2">
-                        <div><p class="font-bold text-slate-800">${t.taskTitle}</p><p class="text-[10px] text-slate-500">《${t.targetBook}》</p></div>
-                        <span class="px-2 py-0.5 rounded-full font-bold text-[9px] ${completed ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">${completed ? '已達成 🏅' : '未完成'}</span>
                     </div>
                 `;
             });
@@ -755,7 +940,7 @@
                 badges.innerHTML += `<div class="flex flex-col items-center ${b.active ? 'opacity-100' : 'opacity-25'}"><span class="text-2xl">${b.i}</span><p class="text-[10px] font-bold mt-1">${b.n}</p></div>`;
             });
             
-            // 榜單
+            // 學生端班級榜
             const classRanks = document.getElementById("classRankList");
             classRanks.innerHTML = "";
             const ranks = {};
@@ -765,12 +950,10 @@
             });
         }
 
-        // 切換文字與照片上傳的 UI
         function toggleReviewUI() {
             const isPhoto = document.querySelector('input[name="reviewType"]:checked').value === "photo";
             document.getElementById("textReviewSection").classList.toggle("hidden", isPhoto);
             document.getElementById("photoReviewSection").classList.toggle("hidden", !isPhoto);
-            
             if (!isPhoto) {
                 document.getElementById('fReviewText').setAttribute('required', 'required');
             } else {
@@ -778,7 +961,6 @@
             }
         }
 
-        // 使用 Canvas 壓縮圖片轉 Base64
         function previewPhoto(event) {
             const file = event.target.files[0];
             if(!file) return;
@@ -788,15 +970,13 @@
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     let w = img.width, h = img.height;
-                    const MAX_WIDTH = 800; // 壓縮限制，加快上傳
+                    const MAX_WIDTH = 800; 
                     if (w > MAX_WIDTH) { h *= MAX_WIDTH / w; w = MAX_WIDTH; }
                     canvas.width = w; canvas.height = h;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, w, h);
-                    
-                    photoBase64Data = canvas.toDataURL('image/jpeg', 0.75); // 壓縮為 JPEG 75%
+                    photoBase64Data = canvas.toDataURL('image/jpeg', 0.75); 
                     photoMimeType = 'image/jpeg';
-                    
                     const preview = document.getElementById('photoPreview');
                     preview.src = photoBase64Data;
                     preview.classList.remove('hidden');
@@ -809,28 +989,24 @@
         async function handleStudentFormSubmit(e) {
             e.preventDefault();
             const isPhoto = document.querySelector('input[name="reviewType"]:checked').value === "photo";
-            
             if(isPhoto && !photoBase64Data) {
-                return showCustomToast("請選擇照片檔案上傳！", "error");
+                return showCustomToast("請選擇相片上傳！", "error");
             }
-            
-            toggleLoader(true, "紀錄與照片上傳雲端中，請耐心等候...");
-            
+            toggleLoader(true, "紀錄與照片同步上傳中，請耐心等候...");
             const data = {
                 action: "addLog",
                 uid: activeUser.uid,
                 studentName: activeUser.name,
                 classId: activeUser.classId,
                 title: document.getElementById("fTitle").value,
-                author: document.getElementById("fAuthor").value || "未提供",
+                author: document.getElementById("fAuthor").value || "未知",
                 category: document.getElementById("fCategory").value,
                 pages: document.getElementById("fPages").value,
-                rating: document.getElementById("fRating").value, // 修復：現在此元素確定存在於 HTML 中，不再會造成 JavaScript Crash！
-                review: isPhoto ? "已透過紙本拍照上傳" : document.getElementById("fReviewText").value,
+                rating: document.getElementById("fRating").value,
+                review: isPhoto ? "已透過紙本照片上傳" : document.getElementById("fReviewText").value,
                 photoBase64: isPhoto ? photoBase64Data : "",
                 mimeType: photoMimeType
             };
-
             try {
                 const res = await fetch(GAS_URL, { 
                     method: "POST", 
@@ -839,7 +1015,7 @@
                 });
                 const json = await res.json();
                 if(json.status === "success") {
-                    showCustomToast("🛫 提報成功！已送入教師審核庫。", "success");
+                    showCustomToast("🛫 提報成功！已送入教師審核庫並獲得 50 經驗值！", "success");
                     document.getElementById("addBookForm").reset();
                     photoBase64Data = "";
                     document.getElementById('photoPreview').classList.add('hidden');
@@ -848,32 +1024,26 @@
                     await syncCloudData();
                 }
             } catch(err) {
-                showCustomToast("上傳失敗，檔案過大或網路異常", "error");
+                showCustomToast("上傳失敗，網路異常或試算表設定問題", "error");
             } finally {
                 toggleLoader(false);
             }
         }
 
-        // ==================== [ 2. 教師端視圖 ] ====================
+        // ==================== [ 2. 教師端審核 ] ====================
         function renderTeacherView() {
-            // 動態更新教師控台標題顯示班級
-            const teacherTitle = document.querySelector("#viewTeacher p.text-slate-400");
-            if(teacherTitle) teacherTitle.innerText = `班級對應：${activeUser.classId} 審查區域`;
-
             const tbody = document.getElementById("reviewTableBody");
             tbody.innerHTML = "";
-            
-            // 只篩選出 "待審核" 且 "屬於該導師負責班級" 的紀錄
             const pendings = appState.logs.filter(l => l.status === "待審核" && l.classId.toString() === activeUser.classId.toString());
 
             if (pendings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold bg-slate-50/50 rounded-xl">🎉 ${activeUser.classId} 目前無待審核的心得紀錄，大家都表現很棒！</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400 font-bold">🎉 目前 ${activeUser.classId} 班無待審核的心得，大家都非常優秀！</td></tr>`;
                 return;
             }
 
             pendings.forEach(l => {
                 let reviewCell = l.photoUrl && l.photoUrl.startsWith("http")
-                    ? `<a href="${l.photoUrl}" target="_blank" class="text-indigo-600 font-bold underline bg-indigo-50 px-2 py-1 rounded inline-block">📸 點此開啟審核圖片</a>`
+                    ? `<a href="${l.photoUrl}" target="_blank" class="text-indigo-600 font-bold underline bg-indigo-50 px-2.5 py-1.5 rounded inline-block">📸 點此開啟審核圖片</a>`
                     : `<span class="italic text-slate-600 font-serif leading-relaxed line-clamp-2">「${l.review}」</span>`;
 
                 tbody.innerHTML += `
@@ -882,8 +1052,8 @@
                         <td class="p-3 font-bold">${l.title} <span class="block text-slate-400 font-normal">${l.pages} 頁</span></td>
                         <td class="p-3 text-xs max-w-xs">${reviewCell}</td>
                         <td class="p-3 text-center space-x-1 whitespace-nowrap">
-                            <button onclick="executeReview('${l.id}', '已核章')" class="bg-emerald-600 text-white px-2 py-1.5 rounded-lg font-bold">核准</button>
-                            <button onclick="executeReview('${l.id}', '不通過')" class="bg-rose-600 text-white px-2 py-1.5 rounded-lg font-bold">退回</button>
+                            <button onclick="executeReview('${l.id}', '已核章')" class="bg-emerald-600 text-white px-2 py-1.5 rounded-lg font-bold cursor-pointer">核准</button>
+                            <button onclick="executeReview('${l.id}', '不通過')" class="bg-rose-600 text-white px-2 py-1.5 rounded-lg font-bold cursor-pointer">退回</button>
                         </td>
                     </tr>
                 `;
@@ -907,58 +1077,258 @@
             }
         }
 
+        // 班導師指派指定任務 (CORS修復版)
         async function handleTeacherTaskSubmit() {
-            const t = document.getElementById("taskTitleInput").value;
-            const b = document.getElementById("taskBookInput").value;
-            if(!t || !b) return;
-            toggleLoader(true);
+            const title = document.getElementById("taskTitleInput").value.trim();
+            const book = document.getElementById("taskBookInput").value.trim();
+            if(!title || !book) return showCustomToast("請填寫指派欄位", "error");
+            toggleLoader(true, "正在發布班級指定任務...");
             try {
-                await fetch(GAS_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "addTask", classId: "C01", taskTitle: t, targetBook: b, dueDate: "2026-08-31" }) });
-                showCustomToast("任務指派成功！", "success");
+                await fetch(GAS_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "addTask", classId: activeUser.classId, taskTitle: title, targetBook: book, dueDate: "2026-08-31" })
+                });
+                showCustomToast("🎯 班級任務指派成功！", "success");
+                document.getElementById("taskTitleInput").value = "";
+                document.getElementById("taskBookInput").value = "";
                 await syncCloudData();
-            } catch(e) {} finally { toggleLoader(false); }
+            } catch(e) {
+                showCustomToast("任務派發異常", "error");
+            } finally {
+                toggleLoader(false);
+            }
         }
 
-        // ==================== [ 3. 管理者端視圖 ] ====================
+        // ==================== [ 3. 管理者最高權限控制模組 ] ====================
         function renderAdminView() {
             document.getElementById("admTotalUsers").innerText = appState.users.length;
             document.getElementById("admTotalLogs").innerText = appState.logs.length;
             document.getElementById("admTotalAnns").innerText = appState.announcements.length;
+            document.getElementById("admTotalQuotes").innerText = appState.quotes ? appState.quotes.length : 0;
             if (GAS_URL) document.getElementById("dbLinkBtn").href = GAS_URL.split("/exec")[0];
+
+            // 填充並渲染管理者紀錄大表
+            renderAdminLogsTable();
         }
 
-        async function postAdminAnnounce(e) {
-            e.preventDefault();
-            toggleLoader(true);
+        // 🎯 核心新增：管理員一鍵「集體派送任務」（支援全校或特定班級）
+        async function handleAdminTaskSubmit() {
+            const targetClass = document.getElementById("admTaskClass").value;
+            const title = document.getElementById("admTaskTitle").value.trim();
+            const book = document.getElementById("admTaskBook").value.trim();
+            const duedate = document.getElementById("admTaskDueDate").value;
+
+            if(!title || !book) return showCustomToast("請完整填寫集派任務內容", "error");
+            toggleLoader(true, "集體任務派送中...");
             try {
-                await fetch(GAS_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "addAnnouncement", title: document.getElementById("admAnnTitle").value, content: document.getElementById("admAnnContent").value }) });
-                showCustomToast("公告發布成功", "success");
-                document.getElementById("admAnnForm").reset();
+                await fetch(GAS_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "addTask", classId: targetClass, taskTitle: title, targetBook: book, dueDate: duedate })
+                });
+                showCustomToast(`🎯 集體指派任務成功！接收班級：[${targetClass}]`, "success");
+                document.getElementById("admTaskTitle").value = "";
+                document.getElementById("admTaskBook").value = "";
                 await syncCloudData();
-            } catch(e) {} finally { toggleLoader(false); }
+            } catch(e) {
+                showCustomToast("任務指派寫入失敗", "error");
+            } finally {
+                toggleLoader(false);
+            }
         }
 
+        // 📢 管理員：發布滾動跑馬燈公告
+        async function postAdminAnnounce() {
+            const t = document.getElementById("admAnnTitle").value.trim();
+            const c = document.getElementById("admAnnContent").value.trim();
+            if(!t || !c) return showCustomToast("請填寫公告主旨與詳細內容", "error");
+            toggleLoader(true, "公告同步發布中...");
+            try {
+                await fetch(GAS_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "addAnnouncement", title: t, content: c }) 
+                });
+                showCustomToast("📣 公告發布成功！", "success");
+                document.getElementById("admAnnTitle").value = "";
+                document.getElementById("admAnnContent").value = "";
+                await syncCloudData();
+            } catch(e) {
+                showCustomToast("公告發布失敗", "error");
+            } finally {
+                toggleLoader(false);
+            }
+        }
+
+        // ✨ 管理員：發布新閱讀金句
+        async function postAdminQuote() {
+            const c = document.getElementById("admQuoteContent").value.trim();
+            const a = document.getElementById("admQuoteAuthor").value.trim() || "佚名";
+            if(!c) return showCustomToast("請輸入金句內文", "error");
+            toggleLoader(true, "金句推播寫入中...");
+            try {
+                await fetch(GAS_URL, { 
+                    method: "POST", 
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "addQuote", content: c, author: a }) 
+                });
+                showCustomToast("✨ 新悅讀金句新增成功！", "success");
+                document.getElementById("admQuoteContent").value = "";
+                document.getElementById("admQuoteAuthor").value = "";
+                await syncCloudData();
+            } catch(e) {
+                showCustomToast("金句發布失敗", "error");
+            } finally {
+                toggleLoader(false);
+            }
+        }
+
+        // 管理員：大表紀錄搜尋與列表渲染
+        function renderAdminLogsTable() {
+            const tbody = document.getElementById("adminLogsTableBody");
+            tbody.innerHTML = "";
+            const logs = appState.logs || [];
+            
+            if(logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">目前尚無閱讀紀錄資料</td></tr>`;
+                return;
+            }
+
+            logs.slice().reverse().forEach(l => {
+                let reviewSnippet = l.photoUrl && l.photoUrl.startsWith("http")
+                    ? `<a href="${l.photoUrl}" target="_blank" class="text-indigo-600 underline font-bold">📸 紙本照片連結</a>`
+                    : `<span class="block truncate max-w-xs" title="${l.review}">「${l.review}」</span>`;
+
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 admin-log-row" data-search="${l.studentName} ${l.classId} ${l.title}">
+                        <td class="p-2 font-bold">${l.classId} 班</td>
+                        <td class="p-2 text-indigo-900 font-bold">${l.studentName}</td>
+                        <td class="p-2"><b>《${l.title}》</b><br><span class="text-[10px] text-slate-400">${l.pages} 頁 | ${l.author}</span></td>
+                        <td class="p-2 text-xs">${reviewSnippet}</td>
+                        <td class="p-2 text-center"><span class="px-2 py-0.5 rounded font-bold text-[10px] ${l.status==='已核章'?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'}">${l.status}</span></td>
+                        <td class="p-2 text-center space-x-1 whitespace-nowrap">
+                            <button onclick="triggerAdminEditLog('${l.id}', '${l.title}', '${l.author}', ${l.pages}, '${l.review}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded text-[10px] font-bold">編輯</button>
+                            <button onclick="triggerAdminDeleteLog('${l.id}', '${l.studentName}', '${l.title}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 rounded text-[10px] font-bold">刪除</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 前端即時過濾大表內容
+        function filterAdminLogsTable() {
+            const term = document.getElementById("adminSearchInput").value.toLowerCase().trim();
+            const rows = document.querySelectorAll(".admin-log-row");
+            rows.forEach(r => {
+                const searchTxt = r.getAttribute("data-search").toLowerCase();
+                r.style.display = searchTxt.includes(term) ? "" : "none";
+            });
+        }
+
+        // 管理員：觸發刪除閱讀紀錄 (結合自訂彈出 Modal 確認，防止 alert 阻擋)
+        function triggerAdminDeleteLog(id, name, book) {
+            showCustomConfirm(
+                "⚠️ 安全刪除確認",
+                `您確定要從雲端資料庫「徹底刪除」 ${name} 提報的書籍《${book}》嗎？此操作不可逆！`,
+                async () => {
+                    toggleLoader(true, "正自雲端刪除中...");
+                    try {
+                        await fetch(GAS_URL, {
+                            method: "POST",
+                            headers: { "Content-Type": "text/plain;charset=utf-8" },
+                            body: JSON.stringify({ action: "deleteLog", logId: id })
+                        });
+                        showCustomToast("已自 Google 試算表安全移出該筆紀錄！", "success");
+                        await syncCloudData();
+                    } catch(e) {
+                        showCustomToast("刪除寫入失敗", "error");
+                    } finally {
+                        toggleLoader(false);
+                    }
+                }
+            );
+        }
+
+        // 管理員：觸發編輯閱讀紀錄 Modal
+        function triggerAdminEditLog(id, title, author, pages, review) {
+            document.getElementById("editTargetLogId").value = id;
+            document.getElementById("editLogTitle").value = title;
+            document.getElementById("editLogAuthor").value = author;
+            document.getElementById("editLogPages").value = pages;
+            document.getElementById("editLogReview").value = review;
+            document.getElementById("adminEditLogModal").classList.remove("hidden");
+        }
+
+        // 管理員：送出編輯變更
+        async function executeAdminEditLog() {
+            const id = document.getElementById("editTargetLogId").value;
+            const title = document.getElementById("editLogTitle").value.trim();
+            const author = document.getElementById("editLogAuthor").value.trim();
+            const pages = document.getElementById("editLogPages").value;
+            const review = document.getElementById("editLogReview").value.trim();
+
+            if(!title || !pages) return showCustomToast("請完整填寫書名與總頁數", "error");
+
+            document.getElementById("adminEditLogModal").classList.add("hidden");
+            toggleLoader(true, "雲端資料庫修改覆寫中...");
+
+            try {
+                await fetch(GAS_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "editLog", logId: id, title: title, author: author, pages: pages, review: review })
+                });
+                showCustomToast("覆寫成功！已同步至 Google 雲端試算表。", "success");
+                await syncCloudData();
+            } catch(e) {
+                showCustomToast("覆寫修改失敗", "error");
+            } finally {
+                toggleLoader(false);
+            }
+        }
+
+        // 匯出當前指導班級報表
         function triggerCsvExport() {
-            let csv = "data:text/csv;charset=utf-8,\uFEFF流水號,提報人,書籍名稱,總頁數,心得感想,認證狀態\n";
-            appState.logs.forEach(l => csv += `${l.id},${l.studentName},${l.title},${l.pages},${l.review.replace(/\n/g, ' ')},${l.status}\n`);
-            const a = document.createElement("a"); a.href = encodeURI(csv); a.download = `報表.csv`; a.click();
+            let csv = "data:text/csv;charset=utf-8,\uFEFF流水號,所屬班級,提報人,書籍名稱,總頁數,心得感想,認證狀態\n";
+            const myClassLogs = appState.logs.filter(l => l.classId.toString() === activeUser.classId.toString());
+            myClassLogs.forEach(l => csv += `${l.id},${l.classId},${l.studentName},${l.title},${l.pages},${l.review.replace(/\n/g, ' ')},${l.status}\n`);
+            const a = document.createElement("a"); a.href = encodeURI(csv); a.download = `${activeUser.classId}班級閱讀護照報表.csv`; a.click();
         }
 
+        // 管理者：一鍵匯出全校所有數據
+        function triggerCsvExportAll() {
+            let csv = "data:text/csv;charset=utf-8,\uFEFF流水號,所屬班級,提報人,國際書號,書籍名稱,總頁數,滿意推薦,心得感想/照片連結,登錄日期,審核狀態,導師簽核日期\n";
+            appState.logs.forEach(l => {
+                csv += `${l.id},${l.classId},${l.studentName},${l.isbn},${l.title},${l.pages},${l.rating},${(l.photoUrl || l.review).replace(/\n/g, ' ')},${l.date},${l.status},${l.teacherSignDate || '未簽核'}\n`;
+            });
+            const a = document.createElement("a"); a.href = encodeURI(csv); a.download = `全校數位閱讀護照總數據庫.csv`; a.click();
+        }
+
+        // ==================== [ ISBN 相機掃描外掛與降級 ] ====================
         function triggerIsbnCamera() {
             document.getElementById("cameraBox").classList.remove("hidden");
             qrScanner = new Html5Qrcode("scannerView");
             qrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (code) => {
                 stopIsbnCamera();
-                document.getElementById("fTitle").value = "世界地理大探險 (自動)";
+                document.getElementById("fTitle").value = "世界地理大探險 (自動帶入)";
                 document.getElementById("fPages").value = 210;
                 showCustomToast(`成功掃描 ISBN: ${code}！`, "success");
             }, () => {}).catch(() => {
-                showCustomToast("相機啟動失敗，已切換模擬模式", "error");
+                showCustomToast("相機啟動失敗或權限未開啟，為您啟動自動帶入降級體驗模式！", "error");
                 stopIsbnCamera();
+                // 模擬自動填入
+                setTimeout(() => {
+                    document.getElementById("fTitle").value = "經典探險故事集 (自動模擬)";
+                    document.getElementById("fAuthor").value = "強納生·霍格";
+                    document.getElementById("fPages").value = 185;
+                    showCustomToast("降級體驗代入完成，您可以直接編輯提交！", "success");
+                }, 800);
             });
         }
         function stopIsbnCamera() { if(qrScanner) qrScanner.stop().then(() => document.getElementById("cameraBox").classList.add("hidden")); }
 
+        // ==================== [ 系統自訂 UI 提示/確認 Modal 工具 ] ====================
         function toggleLoader(show, text="處理中...") {
             document.getElementById("loaderText").innerText = text;
             document.getElementById("loaderMask").classList.toggle("hidden", !show);
@@ -973,6 +1343,18 @@
             toast.classList.replace("translate-y-20", "translate-y-0");
             toast.classList.replace("opacity-0", "opacity-100");
             setTimeout(() => { toast.classList.replace("translate-y-0", "translate-y-20"); toast.classList.replace("opacity-100", "opacity-0"); }, 3000);
+        }
+
+        function showCustomConfirm(title, message, onConfirm) {
+            const modal = document.getElementById("customConfirmModal");
+            document.getElementById("confirmTitle").innerText = title;
+            document.getElementById("confirmMessage").innerText = message;
+            modal.classList.remove("hidden");
+            const cancelBtn = document.getElementById("confirmCancelBtn");
+            const okBtn = document.getElementById("confirmOkBtn");
+            const clean = () => { cancelBtn.onclick = null; okBtn.onclick = null; modal.classList.add("hidden"); };
+            cancelBtn.onclick = clean;
+            okBtn.onclick = () => { onConfirm(); clean(); };
         }
 
         function changeSystemTheme(key) {
