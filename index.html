@@ -706,45 +706,45 @@
             setRole('lobby');
         }
 
-        // 同步 Google Apps Script / Sheets 資料 (CORS 終極穿透版)
+        // 同步 API
         async function syncCloudData() {
-            toggleLoader(true);
+            toggleLoader(true, "雲端資料同步中...");
             try {
-                // 1. 使用 URLSearchParams 確保不會觸發 OPTIONS 預檢請求
+                // 1. 使用 URLSearchParams 將參數包裝在 URL 中，這是最安全的 GET 請求方式
                 const url = new URL(GAS_URL);
                 url.searchParams.append('action', 'getInitData');
 
-                // 2. 使用最基礎的 fetch GET，不夾帶任何敏感 Header
+                // 2. 加入終極解法的 fetch 設定
                 const response = await fetch(url.toString(), {
                     method: 'GET',
-                    mode: 'cors', // 明確宣告跨域
-                    cache: 'no-cache'
+                    mode: 'cors', // 告訴瀏覽器這是一個跨網域請求
+                    redirect: 'follow', // 【關鍵】允許瀏覽器自動跟隨 Google 的重定向
+                    headers: {
+                        'Accept': 'application/json' // 告訴 Google 我們要接收 JSON 資料
+                    }
                 });
-                
-                // 3. 確保回傳狀態正常
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
                 const data = await response.json();
-                
-                // 4. 防呆：檢查後端是否回傳成功狀態
-                if(data.status !== "success") throw new Error("後端回傳資料格式錯誤");
 
-                appState = data;
-                
-                // 更新頂部連線狀態燈為綠色成功
-                const statusIndicator = document.getElementById("syncStatusIndicator");
-                statusIndicator.className = "flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold animate-pulse";
-                statusIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>雲端連線成功</span>';
+                // 3. 嚴謹的錯誤處理：確保後端真的回傳了我們預期的結構
+                if (data.status === "success") {
+                    appState = data;
+                    document.getElementById("syncStatusIndicator").innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span><span>雲端連線成功</span>';
+                    document.getElementById("syncStatusIndicator").className = "flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold";
+                    switchDashboardView();
+                } else {
+                    throw new Error(data.message || "後端回傳狀態非 success");
+                }
 
-                switchDashboardView();
             } catch (err) {
-                console.error("CORS 連線失敗詳細資訊:", err); // 讓您在 F12 開發者工具中能看到真實的阻擋原因
-                
-                const statusIndicator = document.getElementById("syncStatusIndicator");
-                statusIndicator.className = "flex items-center gap-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold";
-                statusIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>連線中斷</span>';
-                
-                showCustomToast("無法成功同步雲端試算表。若持續發生，請確認您的 Google 帳號是否允許發布公開的網頁應用程式。", "error");
+                console.error("同步失敗詳細錯誤：", err); // 將詳細錯誤印在主控台，方便追蹤
+                document.getElementById("syncStatusIndicator").innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>連線異常</span>';
+                document.getElementById("syncStatusIndicator").className = "flex items-center gap-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1.5 rounded-xl text-xs font-bold";
+                showCustomToast("雲端同步失敗，請開啟瀏覽器開發人員工具(F12)查看詳細錯誤。", "error");
             } finally {
                 toggleLoader(false);
             }
