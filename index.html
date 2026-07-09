@@ -718,6 +718,34 @@
             switchDashboardView();
         }
 
+        // [新增] 最高權限管理者登入驗證
+        function performAdminLogin() {
+            const pwd = document.getElementById("adminPwdInput").value;
+            
+            // 驗證密碼，必須與開頭設定的 ADMIN_PASSCODE 一致
+            if (pwd !== ADMIN_PASSCODE) {
+                return showCustomToast("通行密碼錯誤，請重新輸入", "error");
+            }
+
+            activeUser = { uid: "ADMIN", name: "全校系統管理員", role: "admin", classId: "全校" };
+            document.getElementById('adminLoginModal').classList.add('hidden');
+            document.getElementById('adminPwdInput').value = ""; // 清空密碼欄位
+            showCustomToast("解鎖成功：進入全校最高權限控台", "success");
+
+            // 將選項加載至右上角
+            const roleSelect = document.getElementById("roleSelect");
+            let adminOpt = Array.from(roleSelect.options).find(o => o.value === "admin_active");
+            if (!adminOpt) {
+                adminOpt = document.createElement("option");
+                adminOpt.value = "admin_active";
+                roleSelect.add(adminOpt, roleSelect.options[4]);
+            }
+            adminOpt.text = `🏛️ 全校管理員後台`;
+            roleSelect.value = "admin_active";
+
+            switchDashboardView();
+        }
+
         // 點擊Logo快速返回大廳
         function navigateToLobby() {
             setRole('lobby');
