@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧電子閱讀護照系統 v3.5</title>
+    <title>興嘉智慧電子閱讀護照系統 v3.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -23,7 +23,7 @@
         <div class="flex items-center gap-3 cursor-pointer" onclick="navigateToLobby()">
             <span class="text-3xl animate-pulse">🏛️</span>
             <div>
-                <h1 class="text-lg md:text-xl font-bold tracking-wider font-serif">電子閱讀護照大廳</h1>
+                <h1 class="text-lg md:text-xl font-bold tracking-wider font-serif">興嘉電子閱讀護照</h1>
                 <p id="announcementMarquee" class="text-xs text-slate-300 mt-0.5 max-w-xl truncate">正在連線全校公告欄...</p>
             </div>
         </div>
@@ -284,24 +284,29 @@
                         <div class="space-y-2">
                             <input type="text" id="admAnnTitle" placeholder="公告標題" class="w-full p-2.5 border rounded-xl bg-white text-xs">
                             <input type="text" id="admAnnContent" placeholder="詳細公告內文" class="w-full p-2.5 border rounded-xl bg-white text-xs">
-                            <button onclick="postAdminAnnounce()" class="w-full bg-slate-900 text-white py-2 text-xs font-bold rounded-xl">推播公告</button>
+                            <button onclick="postAdminAnnounce(event)" class="w-full bg-slate-900 text-white py-2 text-xs font-bold rounded-xl">推播公告</button>
                         </div>
                     </div>
 
-                    <!-- 系統密碼維護 (全新功能) -->
-                    <div class="bg-rose-50/50 p-5 rounded-2xl border border-rose-100">
-                        <h4 class="font-bold text-xs text-rose-900 mb-3">🔐 系統安全密碼設定</h4>
-                        <div class="space-y-3">
+                    <!-- 系統密碼維護 (全新功能與 UI 升級) -->
+                    <div class="bg-rose-50/50 p-5 rounded-2xl border border-rose-200 shadow-sm relative overflow-hidden">
+                        <!-- 裝飾背景 -->
+                        <div class="absolute -right-4 -bottom-4 text-6xl opacity-5 pointer-events-none">🔐</div>
+                        
+                        <h4 class="font-bold text-xs text-rose-900 mb-4 flex items-center gap-1.5">
+                            <span class="text-base">🔐</span> 最高權限密碼重設中心
+                        </h4>
+                        <div class="space-y-3 relative z-10">
+                            <div>
+                                <label class="block text-[10px] text-rose-700 mb-1 font-bold">新管理員密碼 (最高權限)</label>
+                                <input type="text" id="admSetAdminPwd" placeholder="請輸入新密碼 (不修改請留空)" class="w-full p-2.5 bg-white border border-rose-200 rounded-xl text-xs focus:ring-2 focus:ring-rose-400 focus:outline-none transition">
+                            </div>
                             <div>
                                 <label class="block text-[10px] text-rose-700 mb-1 font-bold">新教師通行密碼</label>
-                                <input type="text" id="admSetTeacherPwd" placeholder="若不修改請留空" class="w-full p-2 bg-white border rounded-xl text-xs">
+                                <input type="text" id="admSetTeacherPwd" placeholder="請輸入新密碼 (不修改請留空)" class="w-full p-2.5 bg-white border border-rose-200 rounded-xl text-xs focus:ring-2 focus:ring-rose-400 focus:outline-none transition">
                             </div>
-                            <div>
-                                <label class="block text-[10px] text-rose-700 mb-1 font-bold">新管理員密碼</label>
-                                <input type="text" id="admSetAdminPwd" placeholder="若不修改請留空" class="w-full p-2 bg-white border rounded-xl text-xs">
-                            </div>
-                            <button onclick="updateSystemPasswords()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-2.5 rounded-xl transition">
-                                儲存變更並更新雲端設定
+                            <button onclick="updateSystemPasswords()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-3 rounded-xl transition shadow-md shadow-rose-600/20 mt-2 cursor-pointer">
+                                💾 儲存變更並更新雲端設定
                             </button>
                         </div>
                     </div>
