@@ -591,6 +591,23 @@
         let photoBase64Data = ""; 
         let photoMimeType = "";
 
+        // 💡 關鍵修復：補回書籍分類與視覺定義
+        const CATEGORY_MAP = {
+            literature: { label: '文學故事', emoji: '🎭', color: 'bg-rose-100 text-rose-800' },
+            science: { label: '科普大自然', emoji: '🔬', color: 'bg-cyan-100 text-cyan-800' },
+            history: { label: '歷史社會', emoji: '🏛️', color: 'bg-amber-100 text-amber-900' },
+            art: { label: '藝術美學', emoji: '🎨', color: 'bg-purple-100 text-purple-800' },
+            growth: { label: '自我成長', emoji: '🌱', color: 'bg-emerald-100 text-emerald-800' },
+            fantasy: { label: '奇幻魔法', emoji: '🔮', color: 'bg-indigo-100 text-indigo-800' }
+        };
+
+        const THEME_MAP = {
+            blue: { coverBg: 'bg-[#1e2d42]', border: 'border-[#e5c158]', text: 'text-[#e5c158]' },
+            green: { coverBg: 'bg-[#1c352d]', border: 'border-[#d4af37]', text: 'text-[#d4af37]' },
+            burgundy: { coverBg: 'bg-[#4a1525]', border: 'border-[#f3cd78]', text: 'text-[#f3cd78]' },
+            purple: { coverBg: 'bg-[#2e1a47]', border: 'border-[#e0b0ff]', text: 'text-[#e0b0ff]' }
+        };
+
         // 預設兜底防呆本地資料（在連線中斷或新工作表載入時，供極速無痛體驗使用）
         const BACKUP_QUOTES = [
             { content: "讀一本好書，就是和許多高尚的人談話。", author: "歌德" },
